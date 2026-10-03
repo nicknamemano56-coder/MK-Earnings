@@ -27,10 +27,8 @@ public class MainActivity extends Activity {
         // JavaScript
         s.setJavaScriptEnabled(true);
 
-        // LocalStorage / DOM Storage
+        // Storage
         s.setDomStorageEnabled(true);
-
-        // Database
         s.setDatabaseEnabled(true);
 
         // File access
@@ -42,14 +40,23 @@ public class MainActivity extends Activity {
                 WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         );
 
-        /*
-         * Handle links clicked inside WebView.
-         *
-         * Normal web pages can stay inside WebView.
-         * UPI / Telegram / Android intent links
-         * are sent to Android so the corresponding
-         * external app can open.
-         */
+        // ==========================================
+        // SCREEN FIT / ZOOM FIX
+        // ==========================================
+
+        // Fit webpage to screen
+        s.setLoadWithOverviewMode(true);
+        s.setUseWideViewPort(false);
+
+        // Disable zoom
+        s.setSupportZoom(false);
+        s.setBuiltInZoomControls(false);
+        s.setDisplayZoomControls(false);
+
+        // ==========================================
+        // URL HANDLING
+        // ==========================================
+
         web.setWebViewClient(new WebViewClient() {
 
             @Override
@@ -75,11 +82,10 @@ public class MainActivity extends Activity {
         web.loadUrl("file:///android_asset/user.html");
     }
 
+    // ==========================================
+    // EXTERNAL URL HANDLER
+    // ==========================================
 
-    /*
-     * Decide whether URL should remain in WebView
-     * or be opened by Android.
-     */
     private boolean handleExternalUrl(String url) {
 
         if (url == null || url.isEmpty()) {
@@ -87,32 +93,18 @@ public class MainActivity extends Activity {
         }
 
         Uri uri = Uri.parse(url);
-
         String scheme = uri.getScheme();
 
         if (scheme == null) {
             return false;
         }
 
-
-        /*
-         * Normal HTTP website.
-         *
-         * Keep it inside the WebView.
-         */
+        // Normal HTTP
         if (scheme.equalsIgnoreCase("http")) {
             return false;
         }
 
-
-        /*
-         * Telegram HTTPS links.
-         *
-         * Example:
-         * https://t.me/ManoMano56?text=...
-         *
-         * Send outside WebView.
-         */
+        // Telegram HTTPS
         if (scheme.equalsIgnoreCase("https")
                 && (
                 url.startsWith("https://t.me/")
@@ -120,54 +112,27 @@ public class MainActivity extends Activity {
         )) {
 
             openExternalUrl(url);
-
             return true;
         }
 
-
-        /*
-         * Other HTTPS pages.
-         *
-         * Keep inside WebView.
-         */
+        // Normal HTTPS pages stay inside WebView
         if (scheme.equalsIgnoreCase("https")) {
             return false;
         }
 
-
-        /*
-         * UPI payment links.
-         *
-         * Example:
-         * upi://pay?pa=...
-         */
+        // UPI
         if (scheme.equalsIgnoreCase("upi")) {
-
             openExternalUrl(url);
-
             return true;
         }
 
-
-        /*
-         * Telegram deep links.
-         *
-         * Example:
-         * tg://resolve?domain=...
-         */
+        // Telegram app links
         if (scheme.equalsIgnoreCase("tg")) {
-
             openExternalUrl(url);
-
             return true;
         }
 
-
-        /*
-         * Android intent:// links.
-         *
-         * These need Intent.parseUri().
-         */
+        // Android Intent URL
         if (scheme.equalsIgnoreCase("intent")) {
 
             try {
@@ -207,19 +172,15 @@ public class MainActivity extends Activity {
             }
         }
 
-
-        /*
-         * Any other external scheme.
-         */
+        // Other external schemes
         openExternalUrl(url);
-
         return true;
     }
 
+    // ==========================================
+    // OPEN EXTERNAL APP
+    // ==========================================
 
-    /*
-     * Open external Android application.
-     */
     private void openExternalUrl(String url) {
 
         try {
@@ -253,10 +214,10 @@ public class MainActivity extends Activity {
         }
     }
 
+    // ==========================================
+    // BACK BUTTON
+    // ==========================================
 
-    /*
-     * Android back button.
-     */
     @Override
     public void onBackPressed() {
 
