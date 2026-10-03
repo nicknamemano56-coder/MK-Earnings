@@ -852,20 +852,7 @@ const server = http.createServer(
           );
         }
 
-        if (
-          w.wagering < amount
-        ) {
-          return json(
-            res,
-            400,
-            {
-              error:
-                `Insufficient wagering remaining. Available: ₹${Number(
-                  w.wagering
-                ).toFixed(2)}`
-            }
-          );
-        }
+        
 
         const seq =
           getSequence();
