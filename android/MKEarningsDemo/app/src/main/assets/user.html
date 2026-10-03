@@ -3215,7 +3215,7 @@ function renderWalletHistory(type){
 
 <script>
 /* MK CLOUD BRIDGE — DEMO ONLY. Existing local data is preserved. */
-window.MK_BACKEND_URL = localStorage.getItem('mk_backend_url') || 'https://mk-earnings-demo-backend.onrender.com';
+window.MK_BACKEND_URL = localStorage.getItem('mk_backend_url') || 'http://localhost:8787';
 window.MK_CLOUD_ENABLED = localStorage.getItem('mk_cloud_enabled') !== '0';
 (function(){
   const API=()=>String(window.MK_BACKEND_URL||'').replace(/\/$/,'');
@@ -3226,15 +3226,100 @@ window.MK_CLOUD_ENABLED = localStorage.getItem('mk_cloud_enabled') !== '0';
     const j=await r.json().catch(()=>({})); if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); return j;
   }
   function cloudStateToLocal(st){
-    if(!st?.user) return;
-    try{ const users=typeof getAuthUsers==='function'?getAuthUsers():[]; const u={mobile:st.user.mobile,password:(users.find(x=>String(x.gameId)===String(st.user.gameId))||{}).password||'',gameId:String(st.user.gameId),createdAt:Number(st.user.createdAt||Date.now())}; const idx=users.findIndex(x=>String(x.gameId)===String(u.gameId)); if(idx>=0) users[idx]={...users[idx],...u}; else users.push(u); localStorage.setItem('mk_auth_users_v2',JSON.stringify(users)); }catch(e){}
-    try{ const a=JSON.parse(localStorage.getItem('mk_wallet_accounts')||'{}'); a[String(st.user.gameId)]={gameId:String(st.user.gameId),mobile:st.user.mobile,balance:Number(st.wallet.balance||0),wagering:Number(st.wallet.wagering||0),wageringCompleted:Number(st.wallet.wagering_completed||0),createdAt:Number(st.user.createdAt||Date.now()),updatedAt:Number(st.wallet.updated_at||Date.now())}; localStorage.setItem('mk_wallet_accounts',JSON.stringify(a)); }catch(e){}
-    try{ const remote=Array.isArray(st.ledger)?st.ledger:[], local=JSON.parse(localStorage.getItem('mk_wallet_ledger_v2')||'[]'), map=new Map(); [...remote,...local].forEach(x=>map.set(String(x.id||JSON.stringify(x)),x)); localStorage.setItem('mk_wallet_ledger_v2',JSON.stringify([...map.values()])); }catch(e){}
-    try{ const rounds=JSON.parse(localStorage.getItem('mk_demo_player_rounds_v1')||'{}'); rounds[String(st.user.gameId)]=Number(st.round||1); localStorage.setItem('mk_demo_player_rounds_v1',JSON.stringify(rounds)); }catch(e){}
+    if(!st?.user || !st?.wallet) return;
+
+    // SERVER IS AUTHORITATIVE FOR THE LOGGED-IN USER.
+    // Always switch the local active Game ID to the Game ID returned by the server.
+    const gid=String(st.user.gameId);
+    try{
+      localStorage.setItem('mk_current_game_id',gid);
+      localStorage.setItem('mk_game_id',gid);
+    }catch(e){}
+
+    try{
+      const users=typeof getAuthUsers==='function'?getAuthUsers():[];
+      const existing=users.find(x=>String(x.gameId)===gid)||{};
+      const u={
+        mobile:String(st.user.mobile||existing.mobile||''),
+        password:existing.password||'',
+        gameId:gid,
+        createdAt:Number(st.user.createdAt||existing.createdAt||Date.now())
+      };
+      const idx=users.findIndex(x=>String(x.gameId)===gid);
+      if(idx>=0) users[idx]={...users[idx],...u};
+      else users.push(u);
+      localStorage.setItem('mk_auth_users_v2',JSON.stringify(users));
+    }catch(e){}
+
+    try{
+      const a=JSON.parse(localStorage.getItem('mk_wallet_accounts')||'{}');
+      const serverBalance=Number(st.wallet.balance);
+      const serverWagering=Number(st.wallet.wagering);
+      const serverCompleted=Number(st.wallet.wagering_completed||0);
+
+      // Do not allow an old local ₹0 wallet to overwrite the server wallet.
+      a[gid]={
+        gameId:gid,
+        mobile:String(st.user.mobile||''),
+        balance:Number.isFinite(serverBalance)?serverBalance:0,
+        wagering:Number.isFinite(serverWagering)?serverWagering:0,
+        wageringCompleted:Number.isFinite(serverCompleted)?serverCompleted:0,
+        createdAt:Number(st.user.createdAt||Date.now()),
+        updatedAt:Number(st.wallet.updated_at||Date.now())
+      };
+      localStorage.setItem('mk_wallet_accounts',JSON.stringify(a));
+    }catch(e){}
+
+    try{
+      const remote=Array.isArray(st.ledger)?st.ledger:[];
+      const local=JSON.parse(localStorage.getItem('mk_wallet_ledger_v2')||'[]');
+      const map=new Map();
+      [...local,...remote].forEach(x=>map.set(String(x.id||JSON.stringify(x)),x));
+      localStorage.setItem('mk_wallet_ledger_v2',JSON.stringify([...map.values()]));
+    }catch(e){}
+
+    try{
+      const rounds=JSON.parse(localStorage.getItem('mk_demo_player_rounds_v1')||'{}');
+      rounds[gid]=Number(st.round||1);
+      localStorage.setItem('mk_demo_player_rounds_v1',JSON.stringify(rounds));
+    }catch(e){}
   }
-  async function cloudLogin(mobile,password){const r=await api('/api/login',{method:'POST',body:JSON.stringify({mobile,password})});localStorage.setItem('mk_cloud_token',r.token);localStorage.setItem('mk_current_game_id',r.gameId);localStorage.setItem('mk_game_id',r.gameId);const st=await api('/api/state');cloudStateToLocal(st);return r;}
-  async function cloudRegister(mobile,password){const r=await api('/api/register',{method:'POST',body:JSON.stringify({mobile,password})});localStorage.setItem('mk_current_game_id',r.gameId);localStorage.setItem('mk_game_id',r.gameId);localStorage.setItem('mk_cloud_token','');return r;}
-  async function pull(){if(!window.MK_CLOUD_ENABLED||!localStorage.getItem('mk_cloud_token'))return;try{const st=await api('/api/state');cloudStateToLocal(st);if(typeof renderProfile==='function')renderProfile();}catch(e){}}
+
+  async function cloudLogin(mobile,password){
+    const r=await api('/api/login',{
+      method:'POST',
+      body:JSON.stringify({mobile,password})
+    });
+    localStorage.setItem('mk_cloud_token',r.token);
+    localStorage.setItem('mk_current_game_id',String(r.gameId));
+    localStorage.setItem('mk_game_id',String(r.gameId));
+
+    // Immediately pull the SERVER wallet after login.
+    const st=await api('/api/state');
+    cloudStateToLocal(st);
+    if(typeof renderProfile==='function') renderProfile();
+    return r;
+  }
+
+  async function cloudRegister(mobile,password){
+    const r=await api('/api/register',{
+      method:'POST',
+      body:JSON.stringify({mobile,password})
+    });
+    localStorage.setItem('mk_current_game_id',String(r.gameId));
+    localStorage.setItem('mk_game_id',String(r.gameId));
+    localStorage.setItem('mk_cloud_token','');
+    return r;
+  }
+
+  async function pull(){
+    if(!window.MK_CLOUD_ENABLED||!localStorage.getItem('mk_cloud_token')) return;
+    try{
+      const st=await api('/api/state');
+      cloudStateToLocal(st);
+      if(typeof renderProfile==='function') renderProfile();
+    }catch(e){}
+  }
   async function cloudSpin(payload){return api('/api/spin',{method:'POST',body:JSON.stringify(payload)});}
   async function cloudWithdraw(payload){return api('/api/withdraw',{method:'POST',body:JSON.stringify(payload)});}
 
@@ -3247,7 +3332,7 @@ window.MK_CLOUD_ENABLED = localStorage.getItem('mk_cloud_enabled') !== '0';
   const bet=document.getElementById('bet');
   if(bet){const original=bet.onclick;bet.onclick=async()=>{if(!window.MK_CLOUD_ENABLED||!localStorage.getItem('mk_cloud_token'))return original();if(busy)return;const name=playerName.value.trim(),player=playerUpi.value.trim();if(!name){statusEl.textContent='Name enter pannunga.';playerName.focus();return}if(!player){statusEl.textContent='UPI ID / Player ID enter pannunga.';playerUpi.focus();return}if(!selectedChoice){statusEl.textContent='BIG / SMALL / TIE select pannunga.';return}const total=baseAmount*qty;try{busy=true;idleRunning=false;lockBetControls();statusEl.textContent='Spinning...';resultEl.textContent='Spinning...';const r=await cloudSpin({choice:selectedChoice,amount:Number(total.toFixed(2)),name,player});const index=r.result==='BIG'?Math.floor(Math.random()*8)*2:r.result==='SMALL'?Math.floor(Math.random()*8)*2+1:(Math.random()<0.5?16:19);await spinTo(index);const win=!!r.win,wonPoints=Number(r.payout||0);if(r.wallet)cloudStateToLocal({user:{gameId:getGameId(),mobile:getAuthUser()?.mobile,createdAt:getAuthUser()?.createdAt},wallet:r.wallet,ledger:r.newLedger||[],round:r.round});if(win){resultEl.textContent=`You Won ${wonPoints} Virtual Points`;resultEl.style.borderColor='#22c55e';statusEl.textContent=`🎉 Result: ${r.result}`;showResultEffect('win',total);}else{resultEl.textContent='Oops, You Lose';resultEl.style.borderColor='#ef4444';statusEl.textContent=`Result: ${r.result}`;showResultEffect('loss',total);}saveHistory({name,player,choice:selectedChoice,amount:total,result:r.result,win,time:new Date().toLocaleString('en-IN')});await new Promise(x=>setTimeout(x,3000));resetBetUI();busy=false;idleRunning=true;startIdleSpin();renderProfile();}catch(e){busy=false;idleRunning=true;statusEl.textContent='Cloud error: '+e.message;lockBetControls(false);startIdleSpin();}};}
 
-  setInterval(pull,3000);
+  setInterval(pull,2000);
   window.MKCloud={api,pull,cloudSpin,cloudWithdraw};
 })();
 </script>
