@@ -11,27 +11,113 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Setup JDK
-        uses: actions/setup-java@v4
+      # 1. Download project
+      - name: Checkout
+        uses: actions/checkout@v6
+
+
+      # 2. Java 17
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
+
+      # 3. Setup Android SDK
+      # Do NOT use android-actions/setup-android here.
+      # GitHub runner already contains Android SDK.
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        shell: bash
+        run: |
+          set -e
 
-      - name: Make Gradle executable
-        run: chmod +x android/MKEarningsDemo/gradlew
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME}}"
 
+          if [ -z "$SDK_ROOT" ]; then
+            echo "Android SDK path not found"
+            exit 1
+          fi
+
+          echo "Android SDK: $SDK_ROOT"
+
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+
+          echo "$SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+
+          if [ ! -f "$SDKMANAGER" ]; then
+            echo "sdkmanager not found"
+            exit 1
+          fi
+
+          echo "Accepting Android SDK licenses..."
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+
+          echo "Reading compileSdk..."
+
+          COMPILE_SDK=$(grep -RhoE \
+            'compileSdk(Version)?[[:space:]]*[=:]?[[:space:]]*[0-9]+' \
+            android/MKEarningsDemo/app/build.gradle* \
+            2>/dev/null \
+            | grep -Eo '[0-9]+' \
+            | head -1 || true)
+
+          if [ -z "$COMPILE_SDK" ]; then
+            COMPILE_SDK=35
+          fi
+
+          echo "compileSdk detected: $COMPILE_SDK"
+
+          echo "Installing required Android SDK packages..."
+
+          "$SDKMANAGER" \
+            "platform-tools" \
+            "platforms;android-$COMPILE_SDK"
+
+          echo "Android SDK setup completed."
+
+
+      # 4. Setup Gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '8.10'
+
+
+      # 5. Check project
+      - name: Check Android project
+        run: |
+          echo "Project files:"
+          ls -la android/MKEarningsDemo
+
+          echo ""
+          echo "App files:"
+          ls -la android/MKEarningsDemo/app
+
+
+      # 6. Build Debug APK
       - name: Build Debug APK
         working-directory: android/MKEarningsDemo
-        run: ./gradlew assembleDebug
+        run: |
+          gradle assembleDebug --no-daemon --stacktrace
 
+
+      # 7. Find APK
+      - name: Find APK
+        run: |
+          echo "Searching for APK..."
+          find android/MKEarningsDemo/app/build/outputs -type f -name "*.apk" -print
+
+
+      # 8. Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: MK-Earnings-Debug-APK
           path: android/MKEarningsDemo/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
