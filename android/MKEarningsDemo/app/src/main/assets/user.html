@@ -2208,7 +2208,22 @@ function getAuthUsers(){
 
 function saveAuthUsers(users){
   localStorage.setItem(AUTH_USERS_KEY,JSON.stringify(users));
-  /* SAFE UPGRADE: legacy auth key is intentionally retained; no existing key is deleted. */
+
+  // Keep the legacy single-account record synchronized with the selected account.
+  // This prevents an old password from being resurrected by the migration code.
+  try{
+    const currentId=localStorage.getItem('mk_current_game_id') || '';
+    const current=users.find(u=>String(u.gameId)===String(currentId));
+    if(current){
+      localStorage.setItem(LEGACY_AUTH_KEY,JSON.stringify({
+        mobile:String(current.mobile||''),
+        password:String(current.password||''),
+        gameId:String(current.gameId||''),
+        createdAt:Number(current.createdAt||Date.now())
+      }));
+    }
+  }catch(e){}
+
   if(typeof walletSyncChannel!=='undefined' && walletSyncChannel){
     try{walletSyncChannel.postMessage({type:'auth-users-updated',at:Date.now()})}catch(e){}
   }
@@ -2226,9 +2241,13 @@ function getAuthUser(){
   const users=getAuthUsers();
   return users.find(u=>String(u.gameId)===String(currentId)) || null;
 }
+function normalizeMobile(mobile){
+  return String(mobile||'').replace(/\\D/g,'');
+}
 function findUserByMobile(mobile){
+  const target=normalizeMobile(mobile);
   const users=getAuthUsers();
-  return users.find(u=>String(u.mobile)===String(mobile)) || null;
+  return users.find(u=>normalizeMobile(u.mobile)===target) || null;
 }
 function findUserByGameId(gameId){
   const users=getAuthUsers();
@@ -2340,7 +2359,7 @@ document.getElementById('registerBtn').onclick=()=>{
 };
 
 document.getElementById('loginBtn').onclick=()=>{
-  const mobile=document.getElementById('loginMobile').value.trim();
+  const mobile=normalizeMobile(document.getElementById('loginMobile').value);
   const password=document.getElementById('loginPassword').value;
   const user=findUserByMobile(mobile);
 
@@ -2348,7 +2367,7 @@ document.getElementById('loginBtn').onclick=()=>{
     loginMsg.textContent='No registered account for this mobile number. Please register first.';
     loginMsg.style.color='#ff8f98'; return;
   }
-  if(user.password!==password){
+  if(String(user.password)!==String(password)){
     loginMsg.textContent='Wrong mobile number or password.';
     loginMsg.style.color='#ff8f98'; return;
   }
@@ -2360,39 +2379,79 @@ document.getElementById('loginBtn').onclick=()=>{
 };
 
 document.getElementById('resetPasswordBtn').onclick=()=>{
-  const mobile=document.getElementById('forgotMobile').value.trim();
+  const mobile=normalizeMobile(document.getElementById('forgotMobile').value);
   const oldPassword=document.getElementById('forgotOldPassword').value;
   const newPassword=document.getElementById('forgotNewPassword').value;
   const confirm=document.getElementById('forgotConfirm').value;
-  const user=findUserByMobile(mobile);
 
-  if(!user){
+  if(!/^[0-9]{10}$/.test(mobile)){
+    forgotMsg.textContent='Please enter a valid 10 digit mobile number.';
+    forgotMsg.style.color='#ff8f98'; return;
+  }
+
+  const users=getAuthUsers();
+  const userIndex=users.findIndex(u=>normalizeMobile(u.mobile)===mobile);
+  if(userIndex<0){
     forgotMsg.textContent='Mobile number is not registered.';
     forgotMsg.style.color='#ff8f98'; return;
   }
-  if(user.password!==oldPassword){
+
+  const user=users[userIndex];
+
+  if(String(user.password)!==String(oldPassword)){
     forgotMsg.textContent='Wrong old password.';
     forgotMsg.style.color='#ff8f98'; return;
   }
+
   if(!isValidPassword(newPassword)){
     forgotMsg.textContent='New password must be at least 8 characters.';
     forgotMsg.style.color='#ff8f98'; return;
   }
+
   if(newPassword!==confirm){
     forgotMsg.textContent='New password and confirm password do not match.';
     forgotMsg.style.color='#ff8f98'; return;
   }
 
-  user.password=newPassword;
-  saveAuthUsers(getAuthUsers());
+  if(newPassword===oldPassword){
+    forgotMsg.textContent='New password must be different from old password.';
+    forgotMsg.style.color='#ff8f98'; return;
+  }
+
+  // Update the exact account record, then make it the current account BEFORE saving.
+  users[userIndex]={
+    ...user,
+    mobile,
+    password:newPassword,
+    updatedAt:Date.now()
+  };
   setCurrentGameId(user.gameId);
-  forgotMsg.textContent='Password updated successfully. Please login.';
+  saveAuthUsers(users);
+
+  // Explicitly synchronize the legacy key too.
+  try{
+    localStorage.setItem(LEGACY_AUTH_KEY,JSON.stringify({
+      mobile:String(mobile),
+      password:String(newPassword),
+      gameId:String(user.gameId||''),
+      createdAt:Number(user.createdAt||Date.now()),
+      updatedAt:Date.now()
+    }));
+  }catch(e){}
+
+  // Force a fresh login so the new password is actually tested.
+  localStorage.removeItem('mk_logged_in');
+
+  forgotMsg.textContent='Password updated successfully. Please login with your new password.';
   forgotMsg.style.color='#9cffb6';
-  setTimeout(()=>{
-    document.getElementById('loginMobile').value=mobile;
-    document.getElementById('loginPassword').value='';
-    setAuthMode('login');
-  },700);
+
+  document.getElementById('loginMobile').value=mobile;
+  document.getElementById('loginPassword').value='';
+  document.getElementById('forgotOldPassword').value='';
+  document.getElementById('forgotNewPassword').value='';
+  document.getElementById('forgotConfirm').value='';
+
+  setTimeout(()=>setAuthMode('login'),700);
 };
 
 function logoutUser(){
