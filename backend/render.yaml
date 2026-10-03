@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: mk-earnings-demo-backend
+    runtime: docker
+    plan: free
+    envVars:
+      - key: ADMIN_KEY
+        sync: false
+      - key: DB_FILE
+        value: /var/data/mk_earnings.sqlite

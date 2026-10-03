@@ -1,0 +1,8 @@
+{
+  "name":"mk-earnings-demo-backend",
+  "version":"1.0.0",
+  "private":true,
+  "description":"Demo-only multi-device backend for MK Earnings",
+  "scripts":{"start":"node server.js"},
+  "engines":{"node":">=22"}
+}
