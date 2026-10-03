@@ -3215,7 +3215,7 @@ function renderWalletHistory(type){
 
 <script>
 /* MK CLOUD BRIDGE — DEMO ONLY. Existing local data is preserved. */
-window.MK_BACKEND_URL = localStorage.getItem('mk_backend_url') || 'http://localhost:8787';
+window.MK_BACKEND_URL = localStorage.getItem('mk_backend_url') || 'https://mk-earnings-demo-backend.onrender.com';
 window.MK_CLOUD_ENABLED = localStorage.getItem('mk_cloud_enabled') !== '0';
 (function(){
   const API=()=>String(window.MK_BACKEND_URL||'').replace(/\/$/,'');
