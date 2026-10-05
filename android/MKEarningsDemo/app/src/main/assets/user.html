@@ -1078,6 +1078,24 @@ body{
 .emptyHistory{text-align:center;color:#8795b1;padding:20px}
 @media(max-width:520px){.walletCard{padding:16px}.walletQr{width:190px;height:190px}}
 
+
+/* ===== MK FINAL UI FIXES ===== */
+.passwordWrap{position:relative;width:100%;}
+.passwordWrap .authInput{width:100%;padding-right:48px;}
+.passwordToggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#9fb0d0;font-size:19px;cursor:pointer;padding:6px;line-height:1;}
+.globalRoundBar{margin:12px auto 16px;max-width:520px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.roundBox{background:rgba(18,27,50,.92);border:1px solid #263657;border-radius:14px;padding:10px 14px;text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.16);}
+.roundBox small{display:block;color:#91a0bf;font-size:10px;font-weight:800;letter-spacing:1px;}
+.roundBox b{display:block;margin-top:3px;color:#fff;font-size:20px;}
+#globalCountdown{font-variant-numeric:tabular-nums;}
+.recordsToggle{width:100%;margin-top:12px;padding:13px 16px;border:1px solid #304264;border-radius:12px;background:#121b32;color:#fff;font-weight:800;font-size:14px;cursor:pointer;}
+.recordsPanel{display:none;margin-top:10px;border:1px solid #263657;border-radius:14px;background:#0f172a;padding:12px;max-height:360px;overflow:auto;}
+.recordsPanel.show{display:block;}
+.recordRow{padding:10px 4px;border-bottom:1px solid #202d49;font-size:12px;line-height:1.55;}
+.recordRow:last-child{border-bottom:0;}
+.recordRow .winText{color:#69e28a;font-weight:900;}
+.recordRow .lossText{color:#ff7883;font-weight:900;}
+@media(max-width:480px){.globalRoundBar{grid-template-columns:1fr 1fr}.roundBox b{font-size:18px;}}
 </style>
 </head>
 
@@ -1156,6 +1174,11 @@ body{
 
   <div class="sub">
     20-Part Big / Small / Tie Demo Wheel
+  </div>
+
+  <div class="globalRoundBar" id="globalRoundBar">
+    <div class="roundBox"><small>GLOBAL PERIOD</small><b id="globalPeriod">--</b></div>
+    <div class="roundBox"><small>TIME LEFT</small><b id="globalCountdown">30</b></div>
   </div>
 
   <!-- WHEEL -->
@@ -1300,6 +1323,11 @@ body{
 
     <div class="status" id="status">
       Select BIG / SMALL / TIE
+    </div>
+
+    <button type="button" class="recordsToggle" id="recordsToggle">📋 Records</button>
+    <div class="recordsPanel" id="betRecordsPanel">
+      <div id="betRecordsList"><div class="muted">No betting records yet.</div></div>
     </div>
 
     <div class="result" id="result">
@@ -2069,6 +2097,7 @@ function saveHistory(item){
   );
 
   renderHistory();
+  if(typeof renderBetRecords==='function') renderBetRecords();
 
 }
 
@@ -3000,6 +3029,7 @@ document.getElementById('bet')
 updateTotal();
 
 renderHistory();
+if(typeof renderBetRecords==='function') renderBetRecords();
 
 render();
 
@@ -3282,4 +3312,216 @@ function renderWalletHistory(type){
 
 </script>
 
-\n<script>\n/* =========================================================\n   MK EARNINGS — FINAL GLOBAL BACKEND BRIDGE\n   DEMO / VIRTUAL WALLET ONLY\n========================================================= */\nwindow.MK_BACKEND_URL='https://mk-earnings-demo-backend.onrender.com';\nwindow.MK_CLOUD_ENABLED=true;\n(function(){\n  const API=()=>String(window.MK_BACKEND_URL||'').replace(/\\\/$/,'');\n  async function api(path,opts={}){\n    const headers={'Content-Type':'application/json',...(opts.headers||{})};\n    const token=localStorage.getItem('mk_cloud_token')||'';\n    if(token) headers.Authorization='Bearer '+token;\n    const r=await fetch(API()+path,{...opts,headers});\n    const j=await r.json().catch(()=>({}));\n    if(!r.ok) throw new Error(j.error||j.message||('HTTP '+r.status));\n    return j;\n  }\n  function sync(st){\n    if(!st||!st.user||!st.wallet) return;\n    const gid=String(st.user.gameId);\n    localStorage.setItem('mk_current_game_id',gid);\n    localStorage.setItem('mk_game_id',gid);\n    try{\n      const users=typeof getAuthUsers==='function'?getAuthUsers():[];\n      const old=users.find(x=>String(x.gameId)===gid)||{};\n      const u={mobile:String(st.user.mobile||old.mobile||''),password:old.password||'',gameId:gid,createdAt:Number(st.user.createdAt||old.createdAt||Date.now())};\n      const i=users.findIndex(x=>String(x.gameId)===gid);\n      if(i>=0) users[i]={...users[i],...u}; else users.push(u);\n      localStorage.setItem('mk_auth_users_v2',JSON.stringify(users));\n    }catch(e){}\n    try{\n      const a=JSON.parse(localStorage.getItem('mk_wallet_accounts')||'{}');\n      a[gid]={gameId:gid,mobile:String(st.user.mobile||''),balance:Number(st.wallet.balance||0),wagering:Number(st.wallet.wagering||0),wageringCompleted:Number(st.wallet.wagering_completed||0),createdAt:Number(st.user.createdAt||Date.now()),updatedAt:Number(st.wallet.updated_at||Date.now())};\n      localStorage.setItem('mk_wallet_accounts',JSON.stringify(a));\n    }catch(e){}\n    try{\n      const remote=Array.isArray(st.ledger)?st.ledger:[];\n      const local=JSON.parse(localStorage.getItem('mk_wallet_ledger_v2')||'[]');\n      const map=new Map();\n      [...local,...remote].forEach(x=>map.set(String(x.id||JSON.stringify(x)),x));\n      localStorage.setItem('mk_wallet_ledger_v2',JSON.stringify([...map.values()]));\n    }catch(e){}\n  }\n  async function login(mobile,password){\n    const r=await api('/api/login',{method:'POST',body:JSON.stringify({mobile:String(mobile),password:String(password)})});\n    localStorage.setItem('mk_cloud_token',r.token);\n    localStorage.setItem('mk_current_game_id',String(r.gameId));\n    localStorage.setItem('mk_game_id',String(r.gameId));\n    localStorage.setItem('mk_logged_in','1');\n    sync(await api('/api/state'));\n    if(typeof renderProfile==='function') renderProfile();\n    return r;\n  }\n  async function register(mobile,password){\n    const r=await api('/api/register',{method:'POST',body:JSON.stringify({mobile:String(mobile),password:String(password)})});\n    localStorage.setItem('mk_current_game_id',String(r.gameId));\n    localStorage.setItem('mk_game_id',String(r.gameId));\n    return r;\n  }\n  async function pull(){\n    if(!localStorage.getItem('mk_cloud_token')) return null;\n    try{const st=await api('/api/state');sync(st);if(typeof renderProfile==='function') renderProfile();return st;}catch(e){console.log('Cloud sync:',e.message);return null;}\n  }\n  async function round(){return api('/api/round');}\n  async function spin(payload){return api('/api/spin',{method:'POST',body:JSON.stringify(payload)});}\n  async function withdraw(payload){return api('/api/withdraw',{method:'POST',body:JSON.stringify(payload)});}\n  async function logout(){try{await api('/api/logout',{method:'POST'});}catch(e){} localStorage.removeItem('mk_cloud_token');localStorage.removeItem('mk_logged_in');}\n\n  const reg=document.getElementById('registerBtn');\n  if(reg){reg.onclick=async()=>{\n    const mobile=document.getElementById('registerMobile').value.trim();\n    const password=document.getElementById('registerPassword').value;\n    const confirm=document.getElementById('registerConfirm').value;\n    if(!/^\\d{10}$/.test(mobile)||password.length<8||password!==confirm){registerMsg.textContent='Mobile/password details check pannunga.';registerMsg.style.color='#ff8f98';return;}\n    try{\n      reg.disabled=true; registerMsg.textContent='Creating account...';\n      const r=await register(mobile,password);\n      try{\n        const users=typeof getAuthUsers==='function'?getAuthUsers():[];\n        const filtered=users.filter(x=>String(x.mobile)!==mobile);\n        filtered.push({mobile,password,gameId:String(r.gameId),createdAt:Number(r.createdAt||Date.now())});\n        localStorage.setItem('mk_auth_users_v2',JSON.stringify(filtered));\n      }catch(e){}\n      setCurrentGameId(String(r.gameId));\n      registerMsg.textContent='✓ Registration successful. Game ID: '+r.gameId;\n      registerMsg.style.color='#9cffb6';\n      document.getElementById('loginMobile').value=mobile;\n      document.getElementById('loginPassword').value='';\n      setTimeout(()=>setAuthMode('login'),700);\n    }catch(e){registerMsg.textContent='Registration failed: '+e.message;registerMsg.style.color='#ff8f98';}\n    finally{reg.disabled=false;}\n  };}\n\n  const loginBtn=document.getElementById('loginBtn');\n  if(loginBtn){loginBtn.onclick=async()=>{\n    const mobile=document.getElementById('loginMobile').value.trim();\n    const password=document.getElementById('loginPassword').value;\n    try{\n      loginBtn.disabled=true; loginMsg.textContent='Logging in...';\n      await login(mobile,password);\n      loginMsg.textContent='✓ Login successful'; loginMsg.style.color='#9cffb6';\n      hideAuth();\n      renderProfile();\n    }catch(e){loginMsg.textContent='Login failed: '+e.message;loginMsg.style.color='#ff8f98';}\n    finally{loginBtn.disabled=false;}\n  };}\n\n  const bet=document.getElementById('bet');\n  if(bet){bet.onclick=async()=>{\n    if(!localStorage.getItem('mk_cloud_token')){alert('Please login first.');return;}\n    if(busy)return;\n    const name=playerName.value.trim();\n    const player=playerUpi.value.trim();\n    if(!name){statusEl.textContent='Name enter pannunga.';playerName.focus();return;}\n    if(!player){statusEl.textContent='Player ID enter pannunga.';playerUpi.focus();return;}\n    if(!selectedChoice){statusEl.textContent='BIG / SMALL / TIE select pannunga.';return;}\n    const total=Number((baseAmount*qty).toFixed(2));\n    try{\n      busy=true; idleRunning=false; lockBetControls(); statusEl.textContent='Spinning...'; resultEl.textContent='Spinning...';\n      const r=await spin({choice:selectedChoice,amount:total,name,player});\n      const index=r.result==='BIG'?Math.floor(Math.random()*10)*2:r.result==='SMALL'?Math.floor(Math.random()*10)*2+1:(Math.random()<0.5?16:19);\n      await spinTo(index);\n      sync({user:{gameId:localStorage.getItem('mk_current_game_id'),mobile:getAuthUser?.()?.mobile,createdAt:getAuthUser?.()?.createdAt},wallet:r.wallet,ledger:r.newLedger||[],round:r.round});\n      const win=!!r.win; const payout=Number(r.payout||0);\n      if(win){resultEl.textContent='You Won '+payout.toFixed(2)+' Virtual Points';resultEl.style.borderColor='#22c55e';statusEl.textContent='🎉 Result: '+r.result;showResultEffect('win',total);}else{resultEl.textContent='Oops, You Lose';resultEl.style.borderColor='#ef4444';statusEl.textContent='Result: '+r.result;showResultEffect('loss',total);}\n      saveHistory({name,player,choice:selectedChoice,amount:total,result:r.result,win,payout,round:r.round,time:new Date().toLocaleString('en-IN')});\n      await new Promise(x=>setTimeout(x,3000));\n      resetBet(); busy=false; idleRunning=true; if(typeof startIdleSpin==='function') startIdleSpin(); renderProfile();\n    }catch(e){busy=false;idleRunning=true;statusEl.textContent='Cloud error: '+e.message;lockBetControls(false);if(typeof startIdleSpin==='function') startIdleSpin();}\n  };}\n\n  setInterval(pull,3000);\n  setInterval(async()=>{try{window.MK_GLOBAL_ROUND=await round();localStorage.setItem('mk_global_round',JSON.stringify(window.MK_GLOBAL_ROUND));}catch(e){}},1000);\n  window.MKCloud={api,pull,cloudLogin:login,cloudRegister:register,cloudSpin:spin,cloudWithdraw:withdraw,getRound:round,getState:()=>api('/api/state'),logout};\n  window.MKCloud.pull();\n})();\n</script>\n</body>\n</html>\n
+\n
+
+/* =========================================================
+   MK FINAL UI FIXES — PASSWORD EYE + RECORDS + ROUND TIMER
+========================================================= */
+(function(){
+  function addPasswordEye(id){
+    const input=document.getElementById(id);
+    if(!input || input.closest('.passwordWrap')) return;
+    const wrap=document.createElement('div');
+    wrap.className='passwordWrap';
+    input.parentNode.insertBefore(wrap,input);
+    wrap.appendChild(input);
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='passwordToggle';
+    btn.setAttribute('aria-label','Show password');
+    btn.textContent='👁️';
+    btn.onclick=()=>{
+      const show=input.type==='password';
+      input.type=show?'text':'password';
+      btn.textContent=show?'🙈':'👁️';
+      btn.setAttribute('aria-label',show?'Hide password':'Show password');
+    };
+    wrap.appendChild(btn);
+  }
+  ['loginPassword','registerPassword','registerConfirm','forgotOldPassword','forgotNewPassword','forgotConfirm'].forEach(addPasswordEye);
+
+  const recordsToggle=document.getElementById('recordsToggle');
+  const recordsPanel=document.getElementById('betRecordsPanel');
+  const recordsList=document.getElementById('betRecordsList');
+  if(recordsToggle && recordsPanel){
+    recordsToggle.onclick=()=>{
+      recordsPanel.classList.toggle('show');
+      if(recordsPanel.classList.contains('show')) renderBetRecords();
+    };
+  }
+  function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function renderBetRecords(){
+    if(!recordsList)return;
+    let h=[];
+    try{h=JSON.parse(localStorage.getItem('mk_demo_history')||'[]');}catch(e){h=[];}
+    if(!h.length){recordsList.innerHTML='<div class="muted">No betting records yet.</div>';return;}
+    recordsList.innerHTML=h.slice(0,100).map(x=>`
+      <div class="recordRow">
+        <div><b>Period:</b> ${esc(x.round||'-')} &nbsp; <b>${esc(x.choice||'-')}</b> &nbsp; ₹${Number(x.amount||0).toFixed(2)}</div>
+        <div>Result: <b>${esc(x.result||'-')}</b> &nbsp; <span class="${x.win?'winText':'lossText'}">${x.win?'WIN':'LOSS'}</span></div>
+        <div class="muted">${esc(x.time||'')}</div>
+      </div>`).join('');
+  }
+  window.renderBetRecords=renderBetRecords;
+  window.addEventListener('storage',e=>{if(e.key==='mk_demo_history')renderBetRecords();});
+
+  const period=document.getElementById('globalPeriod');
+  const countdown=document.getElementById('globalCountdown');
+  let lastRound=null;
+  async function updateGlobalRound(){
+    if(!window.MKCloud || !localStorage.getItem('mk_cloud_token')){
+      if(period)period.textContent='LOGIN';
+      if(countdown)countdown.textContent='30';
+      return;
+    }
+    try{
+      const r=await window.MKCloud.getRound();
+      lastRound=r;
+      if(period)period.textContent=String(r.round||'--');
+      const sec=Math.max(0,Math.ceil(Number(r.remainingMs||0)/1000));
+      if(countdown)countdown.textContent=String(sec).padStart(2,'0');
+      localStorage.setItem('mk_global_round',JSON.stringify(r));
+    }catch(e){}
+  }
+  window.setInterval(updateGlobalRound,1000);
+  updateGlobalRound();
+  window.MK_UI={getRound:()=>lastRound,renderBetRecords};
+})();
+<script>
+/* =========================================================
+   MK EARNINGS — FINAL GLOBAL BACKEND BRIDGE
+   DEMO / VIRTUAL WALLET ONLY
+========================================================= */
+window.MK_BACKEND_URL='https://mk-earnings-demo-backend.onrender.com';
+window.MK_CLOUD_ENABLED=true;
+(function(){
+  const API=()=>String(window.MK_BACKEND_URL||'').replace(/\\\/$/,'');
+  async function api(path,opts={}){
+    const headers={'Content-Type':'application/json',...(opts.headers||{})};
+    const token=localStorage.getItem('mk_cloud_token')||'';
+    if(token) headers.Authorization='Bearer '+token;
+    const r=await fetch(API()+path,{...opts,headers});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(j.error||j.message||('HTTP '+r.status));
+    return j;
+  }
+  function sync(st){
+    if(!st||!st.user||!st.wallet) return;
+    const gid=String(st.user.gameId);
+    localStorage.setItem('mk_current_game_id',gid);
+    localStorage.setItem('mk_game_id',gid);
+    try{
+      const users=typeof getAuthUsers==='function'?getAuthUsers():[];
+      const old=users.find(x=>String(x.gameId)===gid)||{};
+      const u={mobile:String(st.user.mobile||old.mobile||''),password:old.password||'',gameId:gid,createdAt:Number(st.user.createdAt||old.createdAt||Date.now())};
+      const i=users.findIndex(x=>String(x.gameId)===gid);
+      if(i>=0) users[i]={...users[i],...u}; else users.push(u);
+      localStorage.setItem('mk_auth_users_v2',JSON.stringify(users));
+    }catch(e){}
+    try{
+      const a=JSON.parse(localStorage.getItem('mk_wallet_accounts')||'{}');
+      a[gid]={gameId:gid,mobile:String(st.user.mobile||''),balance:Number(st.wallet.balance||0),wagering:Number(st.wallet.wagering||0),wageringCompleted:Number(st.wallet.wagering_completed||0),createdAt:Number(st.user.createdAt||Date.now()),updatedAt:Number(st.wallet.updated_at||Date.now())};
+      localStorage.setItem('mk_wallet_accounts',JSON.stringify(a));
+    }catch(e){}
+    try{
+      const remote=Array.isArray(st.ledger)?st.ledger:[];
+      const local=JSON.parse(localStorage.getItem('mk_wallet_ledger_v2')||'[]');
+      const map=new Map();
+      [...local,...remote].forEach(x=>map.set(String(x.id||JSON.stringify(x)),x));
+      localStorage.setItem('mk_wallet_ledger_v2',JSON.stringify([...map.values()]));
+    }catch(e){}
+  }
+  async function login(mobile,password){
+    const r=await api('/api/login',{method:'POST',body:JSON.stringify({mobile:String(mobile),password:String(password)})});
+    localStorage.setItem('mk_cloud_token',r.token);
+    localStorage.setItem('mk_current_game_id',String(r.gameId));
+    localStorage.setItem('mk_game_id',String(r.gameId));
+    localStorage.setItem('mk_logged_in','1');
+    sync(await api('/api/state'));
+    if(typeof renderProfile==='function') renderProfile();
+    return r;
+  }
+  async function register(mobile,password){
+    const r=await api('/api/register',{method:'POST',body:JSON.stringify({mobile:String(mobile),password:String(password)})});
+    localStorage.setItem('mk_current_game_id',String(r.gameId));
+    localStorage.setItem('mk_game_id',String(r.gameId));
+    return r;
+  }
+  async function pull(){
+    if(!localStorage.getItem('mk_cloud_token')) return null;
+    try{const st=await api('/api/state');sync(st);if(typeof renderProfile==='function') renderProfile();return st;}catch(e){console.log('Cloud sync:',e.message);return null;}
+  }
+  async function round(){return api('/api/round');}
+  async function spin(payload){return api('/api/spin',{method:'POST',body:JSON.stringify(payload)});}
+  async function withdraw(payload){return api('/api/withdraw',{method:'POST',body:JSON.stringify(payload)});}
+  async function logout(){try{await api('/api/logout',{method:'POST'});}catch(e){} localStorage.removeItem('mk_cloud_token');localStorage.removeItem('mk_logged_in');}
+
+  const reg=document.getElementById('registerBtn');
+  if(reg){reg.onclick=async()=>{
+    const mobile=document.getElementById('registerMobile').value.trim();
+    const password=document.getElementById('registerPassword').value;
+    const confirm=document.getElementById('registerConfirm').value;
+    if(!/^\\d{10}$/.test(mobile)||password.length<8||password!==confirm){registerMsg.textContent='Mobile/password details check pannunga.';registerMsg.style.color='#ff8f98';return;}
+    try{
+      reg.disabled=true; registerMsg.textContent='Creating account...';
+      const r=await register(mobile,password);
+      try{
+        const users=typeof getAuthUsers==='function'?getAuthUsers():[];
+        const filtered=users.filter(x=>String(x.mobile)!==mobile);
+        filtered.push({mobile,password,gameId:String(r.gameId),createdAt:Number(r.createdAt||Date.now())});
+        localStorage.setItem('mk_auth_users_v2',JSON.stringify(filtered));
+      }catch(e){}
+      setCurrentGameId(String(r.gameId));
+      registerMsg.textContent='✓ Registration successful. Game ID: '+r.gameId;
+      registerMsg.style.color='#9cffb6';
+      document.getElementById('loginMobile').value=mobile;
+      document.getElementById('loginPassword').value='';
+      setTimeout(()=>setAuthMode('login'),700);
+    }catch(e){registerMsg.textContent='Registration failed: '+e.message;registerMsg.style.color='#ff8f98';}
+    finally{reg.disabled=false;}
+  };}
+
+  const loginBtn=document.getElementById('loginBtn');
+  if(loginBtn){loginBtn.onclick=async()=>{
+    const mobile=document.getElementById('loginMobile').value.trim();
+    const password=document.getElementById('loginPassword').value;
+    try{
+      loginBtn.disabled=true; loginMsg.textContent='Logging in...';
+      await login(mobile,password);
+      loginMsg.textContent='✓ Login successful'; loginMsg.style.color='#9cffb6';
+      hideAuth();
+      renderProfile();
+    }catch(e){loginMsg.textContent='Login failed: '+e.message;loginMsg.style.color='#ff8f98';}
+    finally{loginBtn.disabled=false;}
+  };}
+
+  const bet=document.getElementById('bet');
+  if(bet){bet.onclick=async()=>{
+    if(!localStorage.getItem('mk_cloud_token')){alert('Please login first.');return;}
+    if(busy)return;
+    const name=playerName.value.trim();
+    const player=playerUpi.value.trim();
+    if(!name){statusEl.textContent='Name enter pannunga.';playerName.focus();return;}
+    if(!player){statusEl.textContent='Player ID enter pannunga.';playerUpi.focus();return;}
+    if(!selectedChoice){statusEl.textContent='BIG / SMALL / TIE select pannunga.';return;}
+    const total=Number((baseAmount*qty).toFixed(2));
+    try{
+      busy=true; idleRunning=false; lockBetControls(); statusEl.textContent='Spinning...'; resultEl.textContent='Spinning...';
+      const r=await spin({choice:selectedChoice,amount:total,name,player});
+      const index=r.result==='BIG'?Math.floor(Math.random()*10)*2:r.result==='SMALL'?Math.floor(Math.random()*10)*2+1:(Math.random()<0.5?16:19);
+      await spinTo(index);
+      sync({user:{gameId:localStorage.getItem('mk_current_game_id'),mobile:getAuthUser?.()?.mobile,createdAt:getAuthUser?.()?.createdAt},wallet:r.wallet,ledger:r.newLedger||[],round:r.round});
+      const win=!!r.win; const payout=Number(r.payout||0);
+      if(win){resultEl.textContent='You Won '+payout.toFixed(2)+' Virtual Points';resultEl.style.borderColor='#22c55e';statusEl.textContent='🎉 Result: '+r.result;showResultEffect('win',total);}else{resultEl.textContent='Oops, You Lose';resultEl.style.borderColor='#ef4444';statusEl.textContent='Result: '+r.result;showResultEffect('loss',total);}
+      saveHistory({name,player,choice:selectedChoice,amount:total,result:r.result,win,payout,round:r.round,time:new Date().toLocaleString('en-IN')});
+      await new Promise(x=>setTimeout(x,3000));
+      resetBet(); busy=false; idleRunning=true; if(typeof startIdleSpin==='function') startIdleSpin(); renderProfile();
+    }catch(e){busy=false;idleRunning=true;statusEl.textContent='Cloud error: '+e.message;lockBetControls(false);if(typeof startIdleSpin==='function') startIdleSpin();}
+  };}
+
+  setInterval(pull,3000);
+  setInterval(async()=>{try{window.MK_GLOBAL_ROUND=await round();localStorage.setItem('mk_global_round',JSON.stringify(window.MK_GLOBAL_ROUND));}catch(e){}},1000);
+  window.MKCloud={api,pull,cloudLogin:login,cloudRegister:register,cloudSpin:spin,cloudWithdraw:withdraw,getRound:round,getState:()=>api('/api/state'),logout};
+  window.MKCloud.pull();
+})();
+</script>\n</body>\n</html>\n
