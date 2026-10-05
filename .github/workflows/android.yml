@@ -12,22 +12,18 @@ jobs:
 
     steps:
 
-      # 1. Download project
+      # 1. Checkout project
       - name: Checkout
         uses: actions/checkout@v6
 
-
-      # 2. Java 17
+      # 2. Setup Java 17
       - name: Setup Java 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-
       # 3. Setup Android SDK
-      # Do NOT use android-actions/setup-android here.
-      # GitHub runner already contains Android SDK.
       - name: Setup Android SDK
         shell: bash
         run: |
@@ -58,7 +54,7 @@ jobs:
           echo "Accepting Android SDK licenses..."
           yes | "$SDKMANAGER" --licenses > /dev/null || true
 
-          echo "Reading compileSdk..."
+          echo "Detecting compileSdk..."
 
           COMPILE_SDK=$(grep -RhoE \
             'compileSdk(Version)?[[:space:]]*[=:]?[[:space:]]*[0-9]+' \
@@ -73,21 +69,18 @@ jobs:
 
           echo "compileSdk detected: $COMPILE_SDK"
 
-          echo "Installing required Android SDK packages..."
-
           "$SDKMANAGER" \
             "platform-tools" \
             "platforms;android-$COMPILE_SDK"
 
           echo "Android SDK setup completed."
 
-
-      # 4. Setup Gradle
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: '8.10'
-
+      # 4. Make Gradle Wrapper executable
+      - name: Prepare Gradle Wrapper
+        working-directory: android/MKEarningsDemo
+        run: |
+          chmod +x gradlew
+          ./gradlew --version
 
       # 5. Check project
       - name: Check Android project
@@ -99,20 +92,17 @@ jobs:
           echo "App files:"
           ls -la android/MKEarningsDemo/app
 
-
       # 6. Build Debug APK
       - name: Build Debug APK
         working-directory: android/MKEarningsDemo
         run: |
-          gradle assembleDebug --no-daemon --stacktrace
-
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       # 7. Find APK
       - name: Find APK
         run: |
           echo "Searching for APK..."
           find android/MKEarningsDemo/app/build/outputs -type f -name "*.apk" -print
-
 
       # 8. Upload APK
       - name: Upload APK
