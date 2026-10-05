@@ -1095,6 +1095,10 @@ body{
 .recordRow:last-child{border-bottom:0;}
 .recordRow .winText{color:#69e28a;font-weight:900;}
 .recordRow .lossText{color:#ff7883;font-weight:900;}
+.gameResult{font-weight:1000;}
+.bigText{color:#60a5fa;}
+.smallText{color:#fb7185;}
+.tieText{color:#fbbf24;}
 @media(max-width:480px){.globalRoundBar{grid-template-columns:1fr 1fr}.roundBox b{font-size:18px;}}
 </style>
 </head>
@@ -1325,9 +1329,9 @@ body{
       Select BIG / SMALL / TIE
     </div>
 
-    <button type="button" class="recordsToggle" id="recordsToggle">📋 Records</button>
+    <button type="button" class="recordsToggle" id="recordsToggle">🎮 Game History</button>
     <div class="recordsPanel" id="betRecordsPanel">
-      <div id="betRecordsList"><div class="muted">No betting records yet.</div></div>
+      <div id="betRecordsList"><div class="muted">Waiting for game history...</div></div>
     </div>
 
     <div class="result" id="result">
@@ -1571,7 +1575,7 @@ const IDLE_SECONDS_PER_ROTATION = 10.2;
 const IDLE_DEGREES_PER_SECOND =
   360 / IDLE_SECONDS_PER_ROTATION;
 
-let idleRunning = true;
+let idleRunning = false;
 
 let lastFrame = performance.now();
 
@@ -2821,7 +2825,7 @@ function startNewRound(){
   statusEl.textContent =
     'Select BIG / SMALL / TIE';
 
-  idleRunning = true;
+  idleRunning = false;
 
 }
 
@@ -3493,29 +3497,56 @@ window.MK_CLOUD_ENABLED=true;
   };}
 
   /* =========================================================
-     30-SECOND SERVER-SYNCED WHEEL
-     30-10s : fast continuous spin
-     10-7s  : smooth slowdown (3 seconds)
-     7-3s   : slow spin / settle
-     3-0s   : exact result held on the wheel
-     next round: fast spin starts again
+     30-SECOND AUTOPLAY WHEEL
+     30-10s : FAST
+     10-3s  : SMOOTH SLOWDOWN
+     3-0s   : STOP + HOLD RESULT
+     NEXT 30s: REPEAT
   ========================================================= */
 
-  function sleep(ms){
-    return new Promise(resolve=>setTimeout(resolve,ms));
+  const GAME_HISTORY_KEY='mk_game_history_v1';
+  let visualRoundId='';
+  let visualResult='';
+  let visualTargetRotation=0;
+  let slowStartRotation=0;
+  let slowStartRoundId='';
+  let slowStartMs=0;
+  let slowTargetRotation=0;
+  let lastVisualFrame=performance.now();
+
+  function gameHistory(){
+    try{return JSON.parse(localStorage.getItem(GAME_HISTORY_KEY)||'[]');}
+    catch(e){return []}
   }
 
-  async function waitUntilRemaining(targetMs, roundId){
-    while(true){
-      const r=await round();
-      const remain=Math.max(0,Number(r.remainingMs||0));
-      if(String(r.round||'')!==String(roundId)) return null;
-      if(remain<=targetMs) return {r,remain};
-      await sleep(Math.min(120,Math.max(30,remain-targetMs)));
-    }
+  function saveGameRound(roundId,result){
+    if(!roundId)return;
+    const h=gameHistory();
+    if(h.some(x=>String(x.period)===String(roundId)))return;
+    h.unshift({period:String(roundId),result:String(result),time:new Date().toLocaleString('en-IN')});
+    localStorage.setItem(GAME_HISTORY_KEY,JSON.stringify(h.slice(0,100)));
+    renderGameHistory();
   }
 
-  function getResultIndex(result){
+  function renderGameHistory(){
+    const list=document.getElementById('betRecordsList');
+    if(!list)return;
+    const h=gameHistory();
+    if(!h.length){list.innerHTML='<div class="muted">Waiting for game history...</div>';return;}
+    list.innerHTML=h.slice(0,100).map(x=>`
+      <div class="recordRow">
+        <div><b>Period:</b> ${escapeHtml(x.period)}</div>
+        <div><b>Result:</b> <span class="gameResult ${String(x.result)==='BIG'?'bigText':String(x.result)==='SMALL'?'smallText':'tieText'}">${escapeHtml(x.result)}</span></div>
+        <div class="muted">${escapeHtml(x.time||'')}</div>
+      </div>`).join('');
+  }
+
+  function randomGameResult(){
+    const n=Math.floor(Math.random()*20);
+    return n<9?'BIG':n<18?'SMALL':'TIE';
+  }
+
+  function resultIndex(result){
     return result==='BIG'
       ? Math.floor(Math.random()*10)*2
       : result==='SMALL'
@@ -3523,106 +3554,115 @@ window.MK_CLOUD_ENABLED=true;
         : (Math.random()<0.5?16:19);
   }
 
-  function getTargetRotation(index){
-    const targetCenter=index*18+9;
+  function targetForIndex(index){
+    const center=index*18+9;
     const current=((rotation%360)+360)%360;
-    let delta=(360-targetCenter-current+360)%360;
+    const delta=(360-center-current+360)%360;
     return rotation+delta;
   }
 
-  function animateRotation(start,end,duration,easeFn){
-    return new Promise(resolve=>{
-      const ms=Math.max(1,Number(duration)||1);
-      const t0=performance.now();
-      function frame(now){
-        const p=Math.min(1,(now-t0)/ms);
-        const eased=easeFn ? easeFn(p) : p;
-        rotation=start+(end-start)*eased;
-        render();
-        if(p<1) requestAnimationFrame(frame);
-        else { rotation=end; render(); resolve(); }
+  function prepareVisualRound(r){
+    const rid=String(r.round||'');
+    if(!rid)return;
+    if(rid===visualRoundId)return;
+
+    visualRoundId=rid;
+    visualResult=randomGameResult();
+    visualTargetRotation=targetForIndex(resultIndex(visualResult));
+    slowStartRoundId='';
+    slowStartMs=0;
+    slowStartRotation=rotation;
+    slowTargetRotation=visualTargetRotation+360;
+
+    resultEl.textContent='Spinning...';
+    resultEl.style.borderColor='#2c3a5c';
+    statusEl.textContent='🎮 Period '+rid+' • Wheel spinning';
+  }
+
+  async function globalWheelLoop(){
+    try{
+      const r=await round();
+      const rid=String(r.round||'');
+      const remain=Math.max(0,Number(r.remainingMs||0));
+      if(!rid)return;
+
+      if(rid!==visualRoundId){
+        prepareVisualRound(r);
       }
-      requestAnimationFrame(frame);
+
+      const now=performance.now();
+      const dt=Math.min(.08,Math.max(0,(now-lastVisualFrame)/1000));
+      lastVisualFrame=now;
+
+      if(remain>10000){
+        /* FAST: 30 -> 10 seconds */
+        rotation+=1080*dt;
+        idleRunning=false;
+      }else if(remain>3000){
+        /* SLOWDOWN: 10 -> 3 seconds */
+        idleRunning=false;
+        if(slowStartRoundId!==rid){
+          slowStartRoundId=rid;
+          slowStartMs=remain;
+          slowStartRotation=rotation;
+          slowTargetRotation=targetForIndex(
+            visualResult==='BIG'
+              ? Math.floor(Math.random()*10)*2
+              : visualResult==='SMALL'
+                ? Math.floor(Math.random()*10)*2+1
+                : (Math.random()<0.5?16:19)
+          );
+          /* One extra full turn gives a natural visible slowdown. */
+          slowTargetRotation+=360;
+        }
+        const p=Math.min(1,Math.max(0,(10000-remain)/7000));
+        const eased=1-Math.pow(1-p,3);
+        rotation=slowStartRotation+(slowTargetRotation-slowStartRotation)*eased;
+      }else{
+        /* 3 -> 0 seconds: completely stopped on result */
+        idleRunning=false;
+        rotation=slowTargetRotation;
+        render();
+        resultEl.textContent='Result: '+visualResult;
+        resultEl.style.borderColor='#8ed8ff';
+        statusEl.textContent='🎯 Result: '+visualResult+' • Period '+rid;
+        saveGameRound(rid,visualResult);
+      }
+
+      render();
+    }catch(e){
+      lastVisualFrame=performance.now();
+    }
+
+    setTimeout(globalWheelLoop,120);
+  }
+
+  function waitForRoundEnd(roundId){
+    return new Promise(resolve=>{
+      const check=async()=>{
+        try{
+          const r=await round();
+          if(String(r.round||'')!==String(roundId)){resolve(r);return;}
+        }catch(e){}
+        setTimeout(check,120);
+      };
+      check();
     });
   }
 
-  /*
-     Start from the current wheel position and slow it down from
-     10 seconds to 7 seconds. Then keep a gentle movement until
-     3 seconds remain and settle exactly on BIG / SMALL / TIE.
-  */
+  /* Bet animation now follows the same global wheel. */
   async function runTimedRoundSpin(result){
-    const first=await round();
-    const roundId=String(first.round||'');
-    let remain=Math.max(0,Number(first.remainingMs||0));
-    const index=getResultIndex(result);
-
-    /* If the bet was placed with more than 10 seconds left,
-       keep the normal fast idle wheel running until 10 seconds. */
-    idleRunning=true;
-    if(remain>10000){
-      const hit=await waitUntilRemaining(10000,roundId);
-      if(!hit)return;
-      remain=hit.remain;
+    const r=await round();
+    const rid=String(r.round||'');
+    if(rid){
+      visualResult=String(result||visualResult||randomGameResult());
+      visualTargetRotation=targetForIndex(resultIndex(visualResult));
     }
-
-    /* 10 -> 7 seconds: 3-second smooth slowdown. */
-    idleRunning=false;
-    const nowRound=await round();
-    if(String(nowRound.round||'')!==roundId)return;
-    remain=Math.max(0,Number(nowRound.remainingMs||remain));
-
-    const target=getTargetRotation(index);
-    const current=rotation;
-    const extraTurns=360*1.5;
-    const slowEnd=target+extraTurns;
-
-    if(remain>7000){
-      await animateRotation(
-        current,
-        slowEnd,
-        Math.min(3000,remain-7000),
-        p=>1-Math.pow(1-p,3)
-      );
-    }
-
-    /* 7 -> 3 seconds: gentle slow rotation. */
-    const slowCheck=await round();
-    if(String(slowCheck.round||'')!==roundId)return;
-    remain=Math.max(0,Number(slowCheck.remainingMs||0));
-
-    if(remain>3000){
-      const start=rotation;
-      const gentleTurns=360*0.22;
-      await animateRotation(
-        start,
-        start+gentleTurns,
-        Math.min(4000,remain-3000),
-        p=>p
-      );
-    }
-
-    /* Final 3 seconds: stop exactly on the result and hold it. */
-    const finalCheck=await round();
-    if(String(finalCheck.round||'')!==roundId)return;
-    remain=Math.max(0,Number(finalCheck.remainingMs||0));
-
-    const finalTarget=getTargetRotation(index);
-    if(remain>0){
-      await animateRotation(
-        rotation,
-        finalTarget,
-        Math.min(350,remain),
-        p=>1-Math.pow(1-p,4)
-      );
-    }else{
-      rotation=finalTarget;
-      render();
-    }
-
-    /* Wheel is now stopped from 3 -> 0 seconds. */
-    idleRunning=false;
+    await waitForRoundEnd(rid);
   }
+
+  renderGameHistory();
+  globalWheelLoop();
 
   const bet=document.getElementById('bet');
   if(bet){bet.onclick=async()=>{
@@ -3637,7 +3677,7 @@ window.MK_CLOUD_ENABLED=true;
 
     try{
       busy=true;
-      idleRunning=true;
+      idleRunning=false;
       lockBetControls();
       statusEl.textContent='Bet locked • Wheel running...';
       resultEl.textContent='Spinning...';
@@ -3694,13 +3734,13 @@ window.MK_CLOUD_ENABLED=true;
       resultEffect.innerHTML='';
       resetBet();
       busy=false;
-      idleRunning=true;
+      idleRunning=false;
       startNewRound();
       renderProfile();
 
     }catch(e){
       busy=false;
-      idleRunning=true;
+      idleRunning=false;
       statusEl.textContent='Cloud error: '+e.message;
       startNewRound();
       renderProfile();
