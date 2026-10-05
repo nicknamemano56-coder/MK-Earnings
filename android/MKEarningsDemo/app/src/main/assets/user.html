@@ -1110,6 +1110,35 @@ body{
 .recordRow .winText{color:#69e28a;font-weight:900;}
 .recordRow .lossText{color:#ff7883;font-weight:900;}
 @media(max-width:480px){.globalRoundBar{grid-template-columns:1fr 1fr}.roundBox b{font-size:18px;}}
+
+/* =========================
+   WINGO UI REDESIGN
+========================= */
+.mkLauncher{
+  margin:18px auto;
+  max-width:560px;
+  padding:14px 16px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#1b2440,#111827);
+  border:1px solid #334365;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:0 12px 35px #0007;
+  cursor:pointer;
+}
+.mkLauncherIcon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#ffd54a,#ff8a2a);color:#111;font-weight:1000;font-size:24px}
+.mkLauncherText{flex:1;text-align:left}.mkLauncherText b{display:block;font-size:18px}.mkLauncherText span{display:block;color:#93a1bc;font-size:11px;margin-top:3px}
+.mkOpenBtn{border:0;border-radius:12px;padding:11px 18px;background:#22c55e;color:#fff;font-weight:900;cursor:pointer}
+.wingoScreen{max-width:560px;margin:0 auto;text-align:left}
+.wingoTop{display:flex;align-items:center;gap:10px;padding:12px;border-radius:16px;background:linear-gradient(135deg,#ffcf4a,#ff9b4a);color:#171717}
+.wingoBack{width:38px;height:38px;border:0;border-radius:10px;background:#171717;color:#fff;font-size:22px;cursor:pointer}
+.wingoTitle{font-size:21px;font-weight:1000}.wingoSub{font-size:10px;opacity:.75}.wingoTimerBox{margin-left:auto;text-align:right}.wingoTimerBox small{display:block;font-size:9px;font-weight:900}.wingoTimerBox b{display:block;font-size:25px;letter-spacing:2px;font-variant-numeric:tabular-nums}
+.periodBox{margin-top:8px;padding:10px 13px;border-radius:12px;background:#17151c;color:#ddd;display:flex;justify-content:space-between;align-items:center}.periodBox span{font-size:11px;color:#8e8a99}.periodBox b{font-size:14px;letter-spacing:.5px}
+.resultCardWingo{margin-top:9px;background:#211d24;border-radius:16px;padding:15px;text-align:center;border:1px solid #332d37}.resultNumber{font-size:58px;line-height:1;font-weight:1000;background:linear-gradient(180deg,#fff,#b9a8ff);-webkit-background-clip:text;background-clip:text;color:transparent}.resultMeta{display:flex;justify-content:center;gap:18px;margin-top:8px;font-size:12px;font-weight:900}.resultMeta span:last-child{color:#b6a1ff}
+.colorRow{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:9px}.colorBtn{border:0;border-radius:11px;padding:13px;color:#fff;font-weight:900;font-size:14px}.colorBtn.green{background:#16b364}.colorBtn.violet{background:#9747d8}.colorBtn.red{background:#df343b}.colorBtn.selected{box-shadow:0 0 0 2px #fff inset,0 0 0 2px rgba(255,255,255,.35)}.colorBtn small{font-size:10px;margin-left:3px}
+.wingoPanel{margin-top:9px;padding:13px;border-radius:16px;background:#211d24;border:1px solid #302a34}.panelLabel{display:flex;justify-content:space-between;align-items:center;margin:5px 0 8px;color:#ddd;font-size:12px;font-weight:900}.panelLabel span{color:#ffd166}.numberGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.numberBtn,.sizeBtn,.tieWingo,.amountRowWingo button{border:1px solid #38313d;background:#17131a;color:#fff;border-radius:10px;padding:11px;font-weight:900;cursor:pointer}.numberBtn.selected{background:#8f47d8;border-color:#d7b7ff}.sizeRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sizeBtn{font-size:15px}.bigWingo{background:linear-gradient(135deg,#e7a126,#df8c22);border:0}.smallWingo{background:linear-gradient(135deg,#5794dd,#467fd0);border:0}.tieWingo{width:100%;background:#8f47d8;border:0;margin-bottom:10px}.amountRowWingo{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.amountRowWingo button.active{background:#16b364;border-color:#16b364}.wingoBetInfo{display:flex;justify-content:space-between;margin:12px 0;color:#bdb7c4;font-size:13px}.wingoBetInfo b{color:#fff}.wingoBetBtn{width:100%;border:0;border-radius:12px;padding:14px;background:linear-gradient(90deg,#17b36a,#22c55e);color:#fff;font-size:16px;font-weight:1000;cursor:pointer}.wingoStatus{text-align:center;min-height:22px;margin-top:9px;color:#bfb7c8;font-size:12px;font-weight:800}.wingoHistory{margin-top:9px}.wingoHistoryHead{display:grid;grid-template-columns:1.6fr .6fr .9fr .7fr;gap:5px;padding:9px 8px;color:#aaa2af;font-size:10px;font-weight:900}.wingoHistory .gameHistoryList{max-height:340px;overflow:auto}.wingoHistory .gameHistoryRow{display:grid;grid-template-columns:1.6fr .6fr .9fr .7fr;gap:5px;align-items:center;padding:11px 8px;border-top:1px solid #302a32;font-size:11px}.gameHistoryResult{font-size:13px}.gameHistoryResult.big{color:#e7a126}.gameHistoryResult.small{color:#5794dd}.gameHistoryResult.tie{color:#b66cff}.historyNum{font-size:17px;font-weight:1000}.historyColor{font-weight:900}.historyColor.green{color:#20c777}.historyColor.violet{color:#b66cff}.historyColor.red{color:#ff4b52}.legacyCompat{display:none!important}
+@media(max-width:480px){.wingoScreen{width:100%}.amountRowWingo{grid-template-columns:repeat(3,1fr)}.wingoHistoryHead,.wingoHistory .gameHistoryRow{grid-template-columns:1.55fr .5fr .85fr .65fr;font-size:10px}.periodBox b{font-size:12px}}
 </style>
 </head>
 
@@ -1178,183 +1207,99 @@ body{
     </button>
   </div>
 
-  <div class="brand">
-    Short Time Earnings
+  <div class="mkLauncher" id="mkLauncher">
+    <div class="mkLauncherIcon">W</div>
+    <div class="mkLauncherText">
+      <b>WINGO</b>
+      <span>30 Seconds • Color + Big / Small / Tie</span>
+    </div>
+    <button type="button" class="mkOpenBtn" id="openWingo">PLAY</button>
   </div>
 
-  <h1 class="title">
-    MK Earnings
-  </h1>
-
-  <div class="sub">
-    20-Part Big / Small / Tie Demo Wheel
-  </div>
-
-  <div class="globalRoundBar" id="globalRoundBar">
-    <div class="roundBox"><small>GLOBAL PERIOD</small><b id="globalPeriod">--</b></div>
-    <div class="roundBox"><small>TIME LEFT</small><b id="globalCountdown">30</b></div>
-  </div>
-
-  <!-- WHEEL -->
-
-  <div class="wheelbox">
-
-    <div class="pointer"></div>
-
-    <div class="wheel" id="wheel">
-
-      <div class="slice" style="--a:9deg"><span>BIG</span></div>
-      <div class="slice" style="--a:27deg"><span>SMALL</span></div>
-      <div class="slice" style="--a:45deg"><span>BIG</span></div>
-      <div class="slice" style="--a:63deg"><span>SMALL</span></div>
-      <div class="slice" style="--a:81deg"><span>BIG</span></div>
-      <div class="slice" style="--a:99deg"><span>SMALL</span></div>
-      <div class="slice" style="--a:117deg"><span>BIG</span></div>
-      <div class="slice" style="--a:135deg"><span>SMALL</span></div>
-      <div class="slice" style="--a:153deg"><span>BIG</span></div>
-      <div class="slice" style="--a:171deg"><span>SMALL</span></div>
-      <div class="slice" style="--a:189deg"><span>BIG</span></div>
-      <div class="slice" style="--a:207deg"><span>SMALL</span></div>
-      <div class="slice" style="--a:225deg"><span>BIG</span></div>
-      <div class="slice" style="--a:243deg"><span>SMALL</span></div>
-      <div class="slice" style="--a:261deg"><span>BIG</span></div>
-      <div class="slice" style="--a:279deg"><span>SMALL</span></div>
-      <div class="slice" style="--a:297deg"><span>TIE</span></div>
-      <div class="slice" style="--a:315deg"><span>BIG</span></div>
-      <div class="slice" style="--a:333deg"><span>SMALL</span></div>
-      <div class="slice" style="--a:351deg"><span>TIE</span></div>
-
+  <div class="wingoScreen" id="wingoScreen" style="display:none">
+    <div class="wingoTop">
+      <button type="button" class="wingoBack" id="wingoBack">←</button>
+      <div>
+        <div class="wingoTitle">WINGO</div>
+        <div class="wingoSub">30 Seconds Demo Game</div>
+      </div>
+      <div class="wingoTimerBox">
+        <small>TIME REMAINING</small>
+        <b id="globalCountdown">00:30</b>
+      </div>
     </div>
 
-    <div class="hub">
-      SPIN
+    <div class="periodBox">
+      <span>PERIOD</span>
+      <b id="globalPeriod">--</b>
     </div>
 
-  </div>
-
-  <!-- BET PANEL -->
-
-  <div class="panel">
-
-    <h2>Player Details</h2>
-
-    <p class="hint">
-      Demo mode — virtual points only.
-      No real-money payment or payout.
-    </p>
-
-    <div class="usergrid">
-
-      <input
-        class="input"
-        id="playerName"
-        placeholder="Enter Name"
-      >
-
-      <input
-        class="input"
-        id="playerUpi"
-        placeholder="Enter UPI ID / Player ID"
-      >
-
+    <div class="resultCardWingo" id="wingoResultCard">
+      <div class="resultNumber" id="wingoResultNumber">?</div>
+      <div class="resultMeta">
+        <span id="wingoResultSize">WAITING</span>
+        <span id="wingoResultColor">WAITING</span>
+      </div>
     </div>
 
-    <div class="choiceRow">
-
-      <button class="choice big" data-choice="BIG">
-        BIG
-      </button>
-
-      <button class="choice small" data-choice="SMALL">
-        SMALL
-      </button>
-
+    <div class="panelLabel">Choose Color <span>one only</span></div>
+    <div class="colorRow">
+      <button class="colorBtn green" type="button" data-color="GREEN">Green <small>1.9×</small></button>
+      <button class="colorBtn violet" type="button" data-color="VIOLET">Violet <small>5.5×</small></button>
+      <button class="colorBtn red" type="button" data-color="RED">Red <small>1.9×</small></button>
     </div>
 
-    <button class="choice tie" data-choice="TIE">
-      TIE
-    </button>
-
-    <div class="amounts" id="amounts">
-
-      <button class="amount" data-value="1">1</button>
-      <button class="amount" data-value="5">5</button>
-      <button class="amount" data-value="10">10</button>
-      <button class="amount" data-value="15">15</button>
-      <button class="amount" data-value="20">20</button>
-      <button class="amount" data-value="50">50</button>
-      <button class="amount" data-value="100">100</button>
-
-    </div>
-
-    <div class="stepper">
-
-      <button class="stepBtn" id="minus">
-        −
-      </button>
-
-      <div class="qty">
-
-        Amount:
-        <span id="amountValue">1</span>
-
-        <br>
-
-        <span class="muted">
-          Qty:
-          <span id="qtyValue">1</span>
-        </span>
-
+    <div class="wingoPanel">
+      <div class="panelLabel">Big / Small / Tie <span>one only</span></div>
+      <div class="sizeRow">
+        <button class="sizeBtn bigWingo" data-size="BIG">Big <small>1.9×</small></button>
+        <button class="sizeBtn smallWingo" data-size="SMALL">Small <small>1.9×</small></button>
+        <button class="tieWingo" data-size="TIE">Tie <small>9×</small></button>
       </div>
 
-      <button class="stepBtn" id="plus">
-        +
-      </button>
+      <div class="amountRowWingo" id="wingoAmounts">
+        <button data-amount="1">₹1</button>
+        <button data-amount="5">₹5</button>
+        <button data-amount="10">₹10</button>
+        <button data-amount="20">₹20</button>
+        <button data-amount="50">₹50</button>
+        <button data-amount="100">₹100</button>
+      </div>
 
+      <div class="wingoBetInfo">
+        <span>Bet Amount</span>
+        <b id="wingoBetAmount">₹1</b>
+      </div>
+      <button class="wingoBetBtn" id="wingoBetBtn" type="button">BET</button>
+      <div class="wingoStatus" id="wingoStatus">Select one Color and one Big/Small/Tie option</div>
     </div>
 
-    <div class="total">
-
-      Total Virtual Points:
-
-      <b id="totalValue">
-        1
-      </b>
-
+    <div class="gameHistoryPanel wingoHistory">
+      <div class="gameHistoryTitle">📜 Game History</div>
+      <div class="wingoHistoryHead"><span>Period</span><span>Big/Small/Tie</span><span>Color</span></div>
+      <div class="gameHistoryList" id="gameHistoryList">
+        <div class="muted">Waiting for game rounds...</div>
+      </div>
     </div>
 
-    <div class="actions">
-
-      <button class="cancel" id="cancel">
-        CANCEL
-      </button>
-
-      <button class="bet" id="bet">
-        BET &amp; SPIN
-      </button>
-
+    <div class="demoNote">
+      Demo only — virtual points. No real-money payment or payout is processed.
     </div>
-
-    <div class="status" id="status">
-      Select BIG / SMALL / TIE
-    </div>
-
-    <button type="button" class="recordsToggle" id="recordsToggle">📋 Records</button>
-    <div class="recordsPanel" id="betRecordsPanel">
-      <div id="betRecordsList"><div class="muted">No betting records yet.</div></div>
-    </div>
-
-    <div class="result" id="result">
-      Ready
-    </div>
-
   </div>
 
-  <div class="gameHistoryPanel">
-    <div class="gameHistoryTitle">📜 Game History</div>
-    <div class="gameHistoryList" id="gameHistoryList">
-      <div class="muted">Waiting for game rounds...</div>
-    </div>
+  <!-- Hidden compatibility elements used by the existing demo wallet/history code. -->
+  <div class="legacyCompat" aria-hidden="true">
+    <div class="wheelbox"><div class="wheel" id="wheel"></div></div>
+    <input id="playerName" value="Demo Player">
+    <input id="playerUpi" value="demo-player">
+    <button class="choice big" data-choice="BIG"></button>
+    <button class="choice small" data-choice="SMALL"></button>
+    <button class="choice tie" data-choice="TIE"></button>
+    <button class="amount" data-value="1"></button>
+    <div id="amountValue">1</div><div id="qtyValue">1</div><div id="totalValue">1</div>
+    <button id="minus"></button><button id="plus"></button><button id="cancel"></button>
+    <button id="bet"></button><div id="status"></div><div id="result"></div>
+    <button id="recordsToggle"></button><div id="betRecordsPanel"><div id="betRecordsList"></div></div>
   </div>
 
   <div class="demoNote">
@@ -3387,8 +3332,7 @@ function renderWalletHistory(type){
 
 </script>
 
-\n
-
+<script>
 /* =========================================================
    MK FINAL UI FIXES — PASSWORD EYE + RECORDS + ROUND TIMER
 ========================================================= */
@@ -3688,6 +3632,120 @@ window.MK_CLOUD_ENABLED=true;
   window.MKCloud.pull();
 })();
 </script>
+
+<script>
+/* MK WINGO DEMO MODE — virtual points only */
+(function(){
+  const launcher=document.getElementById('mkLauncher');
+  const screen=document.getElementById('wingoScreen');
+  const open=document.getElementById('openWingo');
+  const back=document.getElementById('wingoBack');
+  const periodEl=document.getElementById('globalPeriod');
+  const timerEl=document.getElementById('globalCountdown');
+  const numEl=document.getElementById('wingoResultNumber');
+  const sizeEl=document.getElementById('wingoResultSize');
+  const colorEl=document.getElementById('wingoResultColor');
+  const status=document.getElementById('wingoStatus');
+  const betBtn=document.getElementById('wingoBetBtn');
+  const betAmountEl=document.getElementById('wingoBetAmount');
+  let selectedSize='';
+  let selectedColor='';
+  let betAmount=1;
+  let lastRoundNo=null;
+  let currentResult=null;
+
+  function roundState(now=Date.now()){
+    const roundNo=Math.floor(now/30000);
+    const start=roundNo*30000;
+    return {roundNo,start,remaining:30000-(now-start)};
+  }
+  function periodFor(start,roundNo){
+    const d=new Date(start), p=n=>String(n).padStart(2,'0');
+    return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds())+String(roundNo%1000).padStart(3,'0');
+  }
+  function makeResult(){
+    const color=['RED','GREEN','VIOLET'][Math.floor(Math.random()*3)];
+    const size=['BIG','SMALL','TIE'][Math.floor(Math.random()*3)];
+    return {color,size};
+  }
+  function gameHistory(){try{return JSON.parse(localStorage.getItem('mk_game_history')||'[]')}catch(e){return[]}}
+  function saveRound(r){
+    const h=gameHistory().filter(x=>String(x.period)!==String(r.period));
+    h.unshift(r);localStorage.setItem('mk_game_history',JSON.stringify(h.slice(0,100)));renderHistory();
+  }
+  function renderHistory(){
+    const el=document.getElementById('gameHistoryList');if(!el)return;
+    const h=gameHistory();
+    if(!h.length){el.innerHTML='<div class="muted">Waiting for game rounds...</div>';return;}
+    el.innerHTML=h.map(x=>{
+      const size=String(x.size||'').toLowerCase(), color=String(x.color||'').toLowerCase();
+      return '<div class="gameHistoryRow"><span>'+escapeHtml(String(x.period))+'</span><b class="gameHistoryResult '+size+'">'+escapeHtml(String(x.size))+'</b><b class="historyColor '+color+'">'+escapeHtml(String(x.color))+'</b></div>';
+    }).join('');
+  }
+  function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+  function startRound(now=Date.now()){
+    const st=roundState(now);
+    if(lastRoundNo!==st.roundNo){
+      lastRoundNo=st.roundNo; currentResult=makeResult();
+      saveRound({period:periodFor(st.start,st.roundNo),size:currentResult.size,color:currentResult.color,time:new Date(st.start).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'} )});
+      numEl.textContent=''; sizeEl.textContent='WAITING'; colorEl.textContent='WAITING';
+      status.textContent='New round started — select one Color + one Big/Small/Tie';
+      selectedSize=''; selectedColor='';
+      document.querySelectorAll('.colorBtn,.sizeBtn,.tieWingo').forEach(b=>b.classList.remove('selected'));
+    }
+    return st;
+  }
+  function updateClock(){
+    const st=startRound();
+    const sec=Math.max(0,Math.ceil(st.remaining/1000));
+    if(periodEl)periodEl.textContent=periodFor(st.start,st.roundNo);
+    if(timerEl)timerEl.textContent='00:'+String(sec).padStart(2,'0');
+  }
+  function updateSelectionText(){
+    if(selectedColor && selectedSize) status.textContent='Selected '+selectedColor+' + '+selectedSize;
+    else if(selectedColor) status.textContent='Selected '+selectedColor+' • Now choose Big/Small/Tie';
+    else if(selectedSize) status.textContent='Selected '+selectedSize+' • Now choose a Color';
+    else status.textContent='Select one Color and one Big/Small/Tie option';
+  }
+  document.querySelectorAll('.sizeBtn,.tieWingo').forEach(btn=>btn.onclick=()=>{
+    selectedSize=btn.dataset.size;
+    document.querySelectorAll('.sizeBtn,.tieWingo').forEach(b=>b.classList.toggle('selected',b===btn));
+    updateSelectionText();
+  });
+  document.querySelectorAll('.colorBtn').forEach(btn=>btn.onclick=()=>{
+    selectedColor=btn.dataset.color;
+    document.querySelectorAll('.colorBtn').forEach(b=>b.classList.toggle('selected',b===btn));
+    updateSelectionText();
+  });
+  document.querySelectorAll('#wingoAmounts button').forEach(btn=>btn.onclick=()=>{
+    betAmount=Number(btn.dataset.amount)||1; betAmountEl.textContent='₹'+betAmount;
+    document.querySelectorAll('#wingoAmounts button').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  });
+  document.querySelector('#wingoAmounts button[data-amount="1"]').classList.add('active');
+  open.onclick=()=>{launcher.style.display='none';screen.style.display='block';updateClock();renderHistory()};
+  launcher.onclick=()=>open.click();
+  back.onclick=()=>{screen.style.display='none';launcher.style.display='flex'};
+  betBtn.onclick=()=>{
+    const st=startRound();
+    if(st.remaining<=500){status.textContent='Round closing — wait for next 30 seconds';return;}
+    if(!selectedColor || !selectedSize){status.textContent='Select one Color AND one Big/Small/Tie';return;}
+    const r=currentResult;
+    const colorWin=selectedColor===r.color;
+    const sizeWin=selectedSize===r.size;
+    const colorMult=selectedColor==='VIOLET'?5.5:1.9;
+    const sizeMult=selectedSize==='TIE'?9:1.9;
+    const colorPayout=colorWin?betAmount*colorMult:0;
+    const sizePayout=sizeWin?betAmount*sizeMult:0;
+    const payout=colorPayout+sizePayout;
+    numEl.textContent=''; sizeEl.textContent=r.size; colorEl.textContent=r.color;
+    status.textContent=(colorWin||sizeWin)?'🎉 WIN • ₹'+payout.toFixed(2)+' virtual points':'Result: '+r.size+' • '+r.color;
+    betBtn.disabled=true;setTimeout(()=>betBtn.disabled=false,900);
+    setTimeout(()=>{sizeEl.textContent='WAITING';colorEl.textContent='WAITING';numEl.textContent=''},2500);
+  };
+  setInterval(updateClock,250); updateClock(); renderHistory();
+})();
+</script>
+
 </body>
 </html>
 
