@@ -11,100 +11,58 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      # 1. Checkout project
       - name: Checkout
         uses: actions/checkout@v6
 
-      # 2. Setup Java 17
       - name: Setup Java 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      # 3. Setup Android SDK
       - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android SDK Platform
         shell: bash
         run: |
           set -e
 
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME}}"
 
-          if [ -z "$SDK_ROOT" ]; then
-            echo "Android SDK path not found"
-            exit 1
-          fi
-
           echo "Android SDK: $SDK_ROOT"
 
-          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          sdkmanager --licenses > /dev/null || true
 
-          echo "$SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
-          echo "$SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-
-          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-
-          if [ ! -f "$SDKMANAGER" ]; then
-            echo "sdkmanager not found"
-            exit 1
-          fi
-
-          echo "Accepting Android SDK licenses..."
-          yes | "$SDKMANAGER" --licenses > /dev/null || true
-
-          echo "Detecting compileSdk..."
-
-          COMPILE_SDK=$(grep -RhoE \
-            'compileSdk(Version)?[[:space:]]*[=:]?[[:space:]]*[0-9]+' \
-            android/MKEarningsDemo/app/build.gradle* \
-            2>/dev/null \
-            | grep -Eo '[0-9]+' \
-            | head -1 || true)
-
-          if [ -z "$COMPILE_SDK" ]; then
-            COMPILE_SDK=35
-          fi
-
-          echo "compileSdk detected: $COMPILE_SDK"
-
-          "$SDKMANAGER" \
+          sdkmanager \
             "platform-tools" \
-            "platforms;android-$COMPILE_SDK"
+            "platforms;android-35" \
+            "build-tools;35.0.0"
 
-          echo "Android SDK setup completed."
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10'
 
-      # 4. Make Gradle Wrapper executable
-      - name: Prepare Gradle Wrapper
-        working-directory: android/MKEarningsDemo
+      - name: Check Android Project
         run: |
-          chmod +x gradlew
-          ./gradlew --version
-
-      # 5. Check project
-      - name: Check Android project
-        run: |
-          echo "Project files:"
+          echo "Project:"
           ls -la android/MKEarningsDemo
 
           echo ""
-          echo "App files:"
+          echo "App:"
           ls -la android/MKEarningsDemo/app
 
-      # 6. Build Debug APK
       - name: Build Debug APK
         working-directory: android/MKEarningsDemo
         run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          gradle assembleDebug --no-daemon --stacktrace
 
-      # 7. Find APK
       - name: Find APK
         run: |
           echo "Searching for APK..."
           find android/MKEarningsDemo/app/build/outputs -type f -name "*.apk" -print
 
-      # 8. Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
