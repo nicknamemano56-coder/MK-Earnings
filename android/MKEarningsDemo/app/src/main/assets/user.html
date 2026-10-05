@@ -3474,7 +3474,7 @@ window.MK_CLOUD_ENABLED=true;
     const mobile=document.getElementById('registerMobile').value.trim();
     const password=document.getElementById('registerPassword').value;
     const confirm=document.getElementById('registerConfirm').value;
-    if(!/^\\d{10}$/.test(mobile)||password.length<8||password!==confirm){registerMsg.textContent='Mobile/password details check pannunga.';registerMsg.style.color='#ff8f98';return;}
+    if(!/^[0-9]{10}$/.test(mobile)||password.length<8||password!==confirm){registerMsg.textContent='Mobile/password details check pannunga.';registerMsg.style.color='#ff8f98';return;}
     try{
       reg.disabled=true; registerMsg.textContent='Creating account...';
       const r=await register(mobile,password);
