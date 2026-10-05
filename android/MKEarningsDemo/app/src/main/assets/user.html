@@ -3379,7 +3379,7 @@ function renderWalletHistory(type){
       localStorage.setItem('mk_global_round',JSON.stringify(r));
     }catch(e){}
   }
-  window.setInterval(updateGlobalRound,1000);
+  window.setInterval(updateGlobalRound,250);
   updateGlobalRound();
   window.MK_UI={getRound:()=>lastRound,renderBetRecords};
 })();
@@ -3494,74 +3494,134 @@ window.MK_CLOUD_ENABLED=true;
 
   /* =========================================================
      30-SECOND SERVER-SYNCED WHEEL
-     0-27s  : light continuous spin
-     27-30s : fast spin
-     30s    : exact result stop
-     next round: light spin starts again
+     30-10s : fast continuous spin
+     10-7s  : smooth slowdown (3 seconds)
+     7-3s   : slow spin / settle
+     3-0s   : exact result held on the wheel
+     next round: fast spin starts again
   ========================================================= */
-  async function waitForFastWindow(){
+
+  function sleep(ms){
+    return new Promise(resolve=>setTimeout(resolve,ms));
+  }
+
+  async function waitUntilRemaining(targetMs, roundId){
     while(true){
       const r=await round();
       const remain=Math.max(0,Number(r.remainingMs||0));
-      const roundId=String(r.round||'');
-      if(remain<=3000) return {r,remain,roundId};
-      await new Promise(x=>setTimeout(x,Math.min(250,remain-3000)));
+      if(String(r.round||'')!==String(roundId)) return null;
+      if(remain<=targetMs) return {r,remain};
+      await sleep(Math.min(120,Math.max(30,remain-targetMs)));
     }
   }
 
-  function fastSpinTo(index,duration){
-    return new Promise(resolve=>{
-      const targetCenter=index*18+9;
-      const current=((rotation%360)+360)%360;
-      let delta=(360-targetCenter-current+360)%360;
-      delta+=360*7;
-      const start=rotation;
-      const end=start+delta;
-      const ms=Math.max(400,Math.min(3000,Number(duration)||2800));
-      const t0=performance.now();
-      function animate(now){
-        const p=Math.min(1,(now-t0)/ms);
-        const eased=1-Math.pow(1-p,5);
-        rotation=start+delta*eased;
-        render();
-        if(p<1) requestAnimationFrame(animate);
-        else { rotation=end; render(); resolve(); }
-      }
-      requestAnimationFrame(animate);
-    });
-  }
-
-  async function runTimedRoundSpin(result){
-    /* Keep the wheel in light idle mode until the final 3 seconds. */
-    idleRunning=true;
-    const fastWindow=await waitForFastWindow();
-
-    /* The backend result is already locked to this 30-second round. */
-    const index=result==='BIG'
+  function getResultIndex(result){
+    return result==='BIG'
       ? Math.floor(Math.random()*10)*2
       : result==='SMALL'
         ? Math.floor(Math.random()*10)*2+1
         : (Math.random()<0.5?16:19);
+  }
 
-    idleRunning=false;
+  function getTargetRotation(index){
+    const targetCenter=index*18+9;
+    const current=((rotation%360)+360)%360;
+    let delta=(360-targetCenter-current+360)%360;
+    return rotation+delta;
+  }
 
-    /* Re-read server time immediately before the fast animation. */
-    let remain=Math.max(0,Number(fastWindow.r.remainingMs||fastWindow.remain||0));
-    try{
-      const latest=await round();
-      if(String(latest.round||'')===fastWindow.roundId){
-        remain=Math.max(0,Number(latest.remainingMs||remain));
+  function animateRotation(start,end,duration,easeFn){
+    return new Promise(resolve=>{
+      const ms=Math.max(1,Number(duration)||1);
+      const t0=performance.now();
+      function frame(now){
+        const p=Math.min(1,(now-t0)/ms);
+        const eased=easeFn ? easeFn(p) : p;
+        rotation=start+(end-start)*eased;
+        render();
+        if(p<1) requestAnimationFrame(frame);
+        else { rotation=end; render(); resolve(); }
       }
-    }catch(e){}
+      requestAnimationFrame(frame);
+    });
+  }
 
-    /* Finish at the 30-second boundary, leaving a tiny safety margin. */
-    const duration=Math.max(700,Math.min(2900,remain-80));
-    await fastSpinTo(index,duration);
+  /*
+     Start from the current wheel position and slow it down from
+     10 seconds to 7 seconds. Then keep a gentle movement until
+     3 seconds remain and settle exactly on BIG / SMALL / TIE.
+  */
+  async function runTimedRoundSpin(result){
+    const first=await round();
+    const roundId=String(first.round||'');
+    let remain=Math.max(0,Number(first.remainingMs||0));
+    const index=getResultIndex(result);
 
-    /* Hold the final result until the backend round actually expires. */
-    const endAt=Date.now()+Math.max(0,remain-duration);
-    const wait=Math.max(0,endAt-Date.now());
-    if(wait>0) await new Promise(x=>setTimeout(x,wait));
+    /* If the bet was placed with more than 10 seconds left,
+       keep the normal fast idle wheel running until 10 seconds. */
+    idleRunning=true;
+    if(remain>10000){
+      const hit=await waitUntilRemaining(10000,roundId);
+      if(!hit)return;
+      remain=hit.remain;
+    }
+
+    /* 10 -> 7 seconds: 3-second smooth slowdown. */
+    idleRunning=false;
+    const nowRound=await round();
+    if(String(nowRound.round||'')!==roundId)return;
+    remain=Math.max(0,Number(nowRound.remainingMs||remain));
+
+    const target=getTargetRotation(index);
+    const current=rotation;
+    const extraTurns=360*1.5;
+    const slowEnd=target+extraTurns;
+
+    if(remain>7000){
+      await animateRotation(
+        current,
+        slowEnd,
+        Math.min(3000,remain-7000),
+        p=>1-Math.pow(1-p,3)
+      );
+    }
+
+    /* 7 -> 3 seconds: gentle slow rotation. */
+    const slowCheck=await round();
+    if(String(slowCheck.round||'')!==roundId)return;
+    remain=Math.max(0,Number(slowCheck.remainingMs||0));
+
+    if(remain>3000){
+      const start=rotation;
+      const gentleTurns=360*0.22;
+      await animateRotation(
+        start,
+        start+gentleTurns,
+        Math.min(4000,remain-3000),
+        p=>p
+      );
+    }
+
+    /* Final 3 seconds: stop exactly on the result and hold it. */
+    const finalCheck=await round();
+    if(String(finalCheck.round||'')!==roundId)return;
+    remain=Math.max(0,Number(finalCheck.remainingMs||0));
+
+    const finalTarget=getTargetRotation(index);
+    if(remain>0){
+      await animateRotation(
+        rotation,
+        finalTarget,
+        Math.min(350,remain),
+        p=>1-Math.pow(1-p,4)
+      );
+    }else{
+      rotation=finalTarget;
+      render();
+    }
+
+    /* Wheel is now stopped from 3 -> 0 seconds. */
+    idleRunning=false;
   }
 
   const bet=document.getElementById('bet');
@@ -3653,4 +3713,7 @@ window.MK_CLOUD_ENABLED=true;
   window.MKCloud={api,pull,cloudLogin:login,cloudRegister:register,cloudSpin:spin,cloudWithdraw:withdraw,getRound:round,getState:()=>api('/api/state'),logout};
   window.MKCloud.pull();
 })();
-</script>\n</body>\n</html>\n
+</script>
+</body>
+</html>
+
