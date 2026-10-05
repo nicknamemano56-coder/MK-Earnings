@@ -1599,31 +1599,8 @@ function render(){
    IDLE LOOP
 ========================= */
 
-function idleLoop(now){
-
-  if(idleRunning){
-
-    const delta =
-      (now-lastFrame)/1000;
-
-    rotation +=
-      IDLE_DEGREES_PER_SECOND * delta;
-
-    if(rotation > 100000){
-      rotation -= 100000;
-    }
-
-    render();
-
-  }
-
-  lastFrame = now;
-
-  requestAnimationFrame(idleLoop);
-
-}
-
-requestAnimationFrame(idleLoop);
+// The global round animation below owns the only animation frame.
+// Keeping a second requestAnimationFrame loop here caused mobile lag.
 
 
 /* =========================
@@ -3339,18 +3316,19 @@ function renderWalletHistory(type){
   const countdown=document.getElementById('globalCountdown');
   let lastRound=null;
   async function updateGlobalRound(){
-    if(!window.MKCloud || !localStorage.getItem('mk_cloud_token')){
-      if(period)period.textContent='LOGIN';
-      if(countdown)countdown.textContent='30';
-      return;
-    }
     try{
-      const r=await window.MKCloud.getRound();
+      let r=null;
+      if(window.MKCloud && typeof window.MKCloud.getRound==='function'){
+        r=await window.MKCloud.getRound();
+      }else{
+        try{r=JSON.parse(localStorage.getItem('mk_global_round')||'null')}catch(e){}
+      }
+      if(!r)return;
       lastRound=r;
       if(period)period.textContent=String(r.round||'--');
       const sec=Math.max(0,Math.ceil(Number(r.remainingMs||0)/1000));
       if(countdown)countdown.textContent=String(sec).padStart(2,'0');
-      localStorage.setItem('mk_global_round',JSON.stringify(r));
+      localStorage.setItem('mk_global_round',JSON.stringify({...r,serverNowMs:Date.now()}));
     }catch(e){}
   }
   /* Server sync once per second; the wheel/timer interpolate locally.
@@ -3480,11 +3458,8 @@ window.MK_CLOUD_ENABLED=true;
   let visualRoundId='';
   let visualResult='';
   let visualTargetRotation=0;
-  let slowStartRotation=0;
-  let slowStartRoundId='';
-  let slowStartMs=0;
-  let slowTargetRotation=0;
-  let lastVisualFrame=performance.now();
+  let lastKnownRound=null;
+  let lastRoundPoll=0;
 
   function gameHistory(){
     try{return JSON.parse(localStorage.getItem(GAME_HISTORY_KEY)||'[]');}
@@ -3492,10 +3467,14 @@ window.MK_CLOUD_ENABLED=true;
   }
 
   function saveGameRound(roundId,result){
-    if(!roundId)return;
+    if(!roundId || !result)return;
     const h=gameHistory();
     if(h.some(x=>String(x.period)===String(roundId)))return;
-    h.unshift({period:String(roundId),result:String(result),time:new Date().toLocaleString('en-IN')});
+    h.unshift({
+      period:String(roundId),
+      result:String(result),
+      time:new Date().toLocaleString('en-IN')
+    });
     localStorage.setItem(GAME_HISTORY_KEY,JSON.stringify(h.slice(0,100)));
     renderGameHistory();
   }
@@ -3504,7 +3483,10 @@ window.MK_CLOUD_ENABLED=true;
     const list=document.getElementById('betRecordsList');
     if(!list)return;
     const h=gameHistory();
-    if(!h.length){list.innerHTML='<div class="muted">Waiting for game history...</div>';return;}
+    if(!h.length){
+      list.innerHTML='<div class="muted">Waiting for game history...</div>';
+      return;
+    }
     list.innerHTML=h.slice(0,100).map(x=>`
       <div class="recordRow">
         <div><b>Period:</b> ${escapeHtml(x.period)}</div>
@@ -3519,11 +3501,9 @@ window.MK_CLOUD_ENABLED=true;
   }
 
   function resultIndex(result){
-    return result==='BIG'
-      ? Math.floor(Math.random()*10)*2
-      : result==='SMALL'
-        ? Math.floor(Math.random()*10)*2+1
-        : (Math.random()<0.5?16:19);
+    if(result==='BIG') return Math.floor(Math.random()*10)*2;
+    if(result==='SMALL') return Math.floor(Math.random()*10)*2+1;
+    return Math.random()<0.5 ? 16 : 19;
   }
 
   function targetForIndex(index){
@@ -3533,133 +3513,105 @@ window.MK_CLOUD_ENABLED=true;
     return rotation+delta;
   }
 
-  function prepareVisualRound(r){
-    const rid=String(r.round||'');
-    if(!rid)return;
-    if(rid===visualRoundId)return;
+  function beginVisualRound(r){
+    const rid=String(r?.round||'');
+    if(!rid || rid===visualRoundId)return;
 
     visualRoundId=rid;
     visualResult=randomGameResult();
     visualTargetRotation=targetForIndex(resultIndex(visualResult));
-    slowStartRoundId='';
-    slowStartMs=0;
-    slowStartRotation=rotation;
-    slowTargetRotation=visualTargetRotation+360;
 
     resultEl.textContent='Spinning...';
     resultEl.style.borderColor='#2c3a5c';
     statusEl.textContent='🎮 Period '+rid+' • Wheel spinning';
   }
 
-  /* =========================================================
-     MOBILE-SAFE WHEEL LOOP
-     - No API call inside requestAnimationFrame
-     - Server round is synced once/second by updateGlobalRound()
-     - Local time interpolation keeps the animation smooth
-     - 30-10s fast, 10-3s slow-down, 3-0s stopped on result
-  ========================================================= */
-  let animRoundId='';
-  let animRoundRemaining=30000;
-  let animRoundSyncAt=performance.now();
-  let animLastFrame=performance.now();
-
-  function getLocalRound(){
-    const cached=window.MK_UI && window.MK_UI.getRound ? window.MK_UI.getRound() : null;
-    if(!cached || !cached.round) return null;
-    return cached;
+  function readCachedRound(){
+    try{return JSON.parse(localStorage.getItem('mk_global_round')||'null');}
+    catch(e){return null}
   }
 
-  function startVisualRound(r){
+  function getCurrentRound(){
+    return lastKnownRound || readCachedRound();
+  }
+
+  function updateRoundUi(r){
+    if(!r)return;
+    lastKnownRound={...r,serverNowMs:Date.now()};
     const rid=String(r.round||'');
-    if(!rid || rid===visualRoundId) return;
+    const ms=Math.max(0,Number(r.remainingMs||0));
+    const sec=Math.ceil(ms/1000);
 
-    visualRoundId=rid;
-    visualResult=randomGameResult();
-    visualTargetRotation=targetForIndex(resultIndex(visualResult));
-    slowStartRoundId='';
-    slowStartMs=0;
-    slowStartRotation=rotation;
-    slowTargetRotation=visualTargetRotation+360;
-    resultEl.textContent='Spinning...';
-    resultEl.style.borderColor='#2c3a5c';
-    statusEl.textContent='🎮 Period '+rid+' • Wheel spinning';
+    if(period)period.textContent=rid||'--';
+    if(countdown)countdown.textContent=String(sec).padStart(2,'0');
+    localStorage.setItem('mk_global_round',JSON.stringify(lastKnownRound));
   }
 
-  function syncVisualRound(){
-    const r=getLocalRound();
-    if(!r) return;
-    const rid=String(r.round||'');
-    if(!rid) return;
-    animRoundId=rid;
-    animRoundRemaining=Math.max(0,Number(r.remainingMs||0));
-    animRoundSyncAt=performance.now();
-    startVisualRound(r);
-  }
+  async function pollRound(){
+    const now=Date.now();
+    if(now-lastRoundPoll<1000)return;
+    lastRoundPoll=now;
 
-  function localRemaining(){
-    if(!animRoundId) return 30000;
-    return Math.max(0,animRoundRemaining-(performance.now()-animRoundSyncAt));
-  }
-
-  function mobileWheelFrame(now){
-    const dt=Math.min(0.05,Math.max(0,(now-animLastFrame)/1000));
-    animLastFrame=now;
-
-    const r=getLocalRound();
-    if(r && String(r.round||'')!==animRoundId){
-      syncVisualRound();
-    }
-
-    const remain=localRemaining();
-
-    if(remain>10000){
-      /* 30 -> 10: fast continuous spin */
-      rotation += 1080*dt;
-      idleRunning=false;
-    }else if(remain>3000){
-      /* 10 -> 3: smooth deceleration */
-      idleRunning=false;
-      if(slowStartRoundId!==animRoundId){
-        slowStartRoundId=animRoundId;
-        slowStartMs=remain;
-        slowStartRotation=rotation;
-        slowTargetRotation=targetForIndex(resultIndex(visualResult))+360;
+    try{
+      if(window.MKCloud && typeof window.MKCloud.getRound==='function'){
+        const r=await window.MKCloud.getRound();
+        updateRoundUi(r);
+        beginVisualRound(r);
+      }else{
+        const cached=readCachedRound();
+        if(cached)updateRoundUi(cached);
       }
-      const p=Math.min(1,Math.max(0,(10000-remain)/7000));
-      const eased=1-Math.pow(1-p,3);
-      rotation=slowStartRotation+(slowTargetRotation-slowStartRotation)*eased;
-    }else{
-      /* 3 -> 0: stop and hold the random result */
+    }catch(e){
+      const cached=readCachedRound();
+      if(cached)updateRoundUi(cached);
+    }
+  }
+
+  function localRemainingMs(){
+    const r=getCurrentRound();
+    if(!r)return 30000;
+    const stampedAt=Number(r.serverNowMs||Date.now());
+    const remaining=Number(r.remainingMs||0) - Math.max(0,Date.now()-stampedAt);
+    return Math.max(0,remaining);
+  }
+
+  let lastWheelFrame=performance.now();
+  let lastHistoryRound='';
+
+  function wheelFrame(now){
+    const dt=Math.min(0.05,Math.max(0,(now-lastWheelFrame)/1000));
+    lastWheelFrame=now;
+
+    const r=getCurrentRound();
+    if(r)beginVisualRound(r);
+
+    const remain=localRemainingMs();
+
+    if(remain>4000){
+      // Normal light continuous speed for almost the whole 30-second round.
+      rotation += 180*dt;
       idleRunning=false;
-      rotation=slowTargetRotation;
+    }else if(remain>0){
+      // At 4 seconds, settle directly onto the selected result and hold it.
+      idleRunning=false;
+      rotation=visualTargetRotation;
       resultEl.textContent='Result: '+visualResult;
       resultEl.style.borderColor='#8ed8ff';
-      if(animRoundId){
-        statusEl.textContent='🎯 Result: '+visualResult+' • Period '+animRoundId;
-        saveGameRound(animRoundId,visualResult);
+      if(visualRoundId && lastHistoryRound!==visualRoundId){
+        lastHistoryRound=visualRoundId;
+        saveGameRound(visualRoundId,visualResult);
       }
+      statusEl.textContent='🎯 Result: '+visualResult+' • Period '+visualRoundId;
     }
 
     render();
-    requestAnimationFrame(mobileWheelFrame);
+    requestAnimationFrame(wheelFrame);
   }
 
   renderGameHistory();
-  syncVisualRound();
-  requestAnimationFrame(mobileWheelFrame);
-
-  function waitForRoundEnd(roundId){
-    return new Promise(resolve=>{
-      const check=async()=>{
-        try{
-          const r=await round();
-          if(String(r.round||'')!==String(roundId)){resolve(r);return;}
-        }catch(e){}
-        setTimeout(check,120);
-      };
-      check();
-    });
-  }
+  pollRound();
+  requestAnimationFrame(wheelFrame);
+  window.setInterval(pollRound,1000);
 
   /* Bet animation now follows the same global wheel. */
   async function runTimedRoundSpin(result){
@@ -3673,7 +3625,6 @@ window.MK_CLOUD_ENABLED=true;
   }
 
   renderGameHistory();
-  globalWheelLoop();
 
   const bet=document.getElementById('bet');
   if(bet){bet.onclick=async()=>{
@@ -3746,21 +3697,20 @@ window.MK_CLOUD_ENABLED=true;
       resetBet();
       busy=false;
       idleRunning=false;
-      startNewRound();
       renderProfile();
+      pollRound();
 
     }catch(e){
       busy=false;
       idleRunning=false;
       statusEl.textContent='Cloud error: '+e.message;
-      startNewRound();
       renderProfile();
+      pollRound();
     }
   };
   }
 
   setInterval(pull,3000);
-  setInterval(async()=>{try{window.MK_GLOBAL_ROUND=await round();localStorage.setItem('mk_global_round',JSON.stringify(window.MK_GLOBAL_ROUND));}catch(e){}},1000);
   window.MKCloud={api,pull,cloudLogin:login,cloudRegister:register,cloudSpin:spin,cloudWithdraw:withdraw,getRound:round,getState:()=>api('/api/state'),logout};
   window.MKCloud.pull();
 })();
