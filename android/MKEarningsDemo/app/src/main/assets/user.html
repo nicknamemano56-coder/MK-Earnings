@@ -3495,6 +3495,78 @@ window.MK_CLOUD_ENABLED=true;
     finally{loginBtn.disabled=false;}
   };}
 
+  /* =========================================================
+     30-SECOND SERVER-SYNCED WHEEL
+     0-27s  : light continuous spin
+     27-30s : fast spin
+     30s    : exact result stop
+     next round: light spin starts again
+  ========================================================= */
+  async function waitForFastWindow(){
+    while(true){
+      const r=await round();
+      const remain=Math.max(0,Number(r.remainingMs||0));
+      const roundId=String(r.round||'');
+      if(remain<=3000) return {r,remain,roundId};
+      await new Promise(x=>setTimeout(x,Math.min(250,remain-3000)));
+    }
+  }
+
+  function fastSpinTo(index,duration){
+    return new Promise(resolve=>{
+      const targetCenter=index*18+9;
+      const current=((rotation%360)+360)%360;
+      let delta=(360-targetCenter-current+360)%360;
+      delta+=360*7;
+      const start=rotation;
+      const end=start+delta;
+      const ms=Math.max(400,Math.min(3000,Number(duration)||2800));
+      const t0=performance.now();
+      function animate(now){
+        const p=Math.min(1,(now-t0)/ms);
+        const eased=1-Math.pow(1-p,5);
+        rotation=start+delta*eased;
+        render();
+        if(p<1) requestAnimationFrame(animate);
+        else { rotation=end; render(); resolve(); }
+      }
+      requestAnimationFrame(animate);
+    });
+  }
+
+  async function runTimedRoundSpin(result){
+    /* Keep the wheel in light idle mode until the final 3 seconds. */
+    idleRunning=true;
+    const fastWindow=await waitForFastWindow();
+
+    /* The backend result is already locked to this 30-second round. */
+    const index=result==='BIG'
+      ? Math.floor(Math.random()*10)*2
+      : result==='SMALL'
+        ? Math.floor(Math.random()*10)*2+1
+        : (Math.random()<0.5?16:19);
+
+    idleRunning=false;
+
+    /* Re-read server time immediately before the fast animation. */
+    let remain=Math.max(0,Number(fastWindow.r.remainingMs||fastWindow.remain||0));
+    try{
+      const latest=await round();
+      if(String(latest.round||'')===fastWindow.roundId){
+        remain=Math.max(0,Number(latest.remainingMs||remain));
+      }
+    }catch(e){}
+
+    /* Finish at the 30-second boundary, leaving a tiny safety margin. */
+    const duration=Math.max(700,Math.min(2900,remain-80));
+    await fastSpinTo(index,duration);
+
+    /* Hold the final result until the backend round actually expires. */
+    const endAt=Date.now()+Math.max(0,remain-duration);
+    const wait=Math.max(0,endAt-Date.now());
+    if(wait>0) await new Promise(x=>setTimeout(x,wait));
+  }
+
   const bet=document.getElementById('bet');
   if(bet){bet.onclick=async()=>{
     if(!localStorage.getItem('mk_cloud_token')){alert('Please login first.');return;}
@@ -3505,19 +3577,79 @@ window.MK_CLOUD_ENABLED=true;
     if(!player){statusEl.textContent='Player ID enter pannunga.';playerUpi.focus();return;}
     if(!selectedChoice){statusEl.textContent='BIG / SMALL / TIE select pannunga.';return;}
     const total=Number((baseAmount*qty).toFixed(2));
+
     try{
-      busy=true; idleRunning=false; lockBetControls(); statusEl.textContent='Spinning...'; resultEl.textContent='Spinning...';
+      busy=true;
+      idleRunning=true;
+      lockBetControls();
+      statusEl.textContent='Bet locked • Wheel running...';
+      resultEl.textContent='Spinning...';
+      resultEl.style.borderColor='#2c3a5c';
+
+      /* Backend fixes the result for the current 30-second round. */
       const r=await spin({choice:selectedChoice,amount:total,name,player});
-      const index=r.result==='BIG'?Math.floor(Math.random()*10)*2:r.result==='SMALL'?Math.floor(Math.random()*10)*2+1:(Math.random()<0.5?16:19);
-      await spinTo(index);
-      sync({user:{gameId:localStorage.getItem('mk_current_game_id'),mobile:getAuthUser?.()?.mobile,createdAt:getAuthUser?.()?.createdAt},wallet:r.wallet,ledger:r.newLedger||[],round:r.round});
-      const win=!!r.win; const payout=Number(r.payout||0);
-      if(win){resultEl.textContent='You Won '+payout.toFixed(2)+' Virtual Points';resultEl.style.borderColor='#22c55e';statusEl.textContent='🎉 Result: '+r.result;showResultEffect('win',total);}else{resultEl.textContent='Oops, You Lose';resultEl.style.borderColor='#ef4444';statusEl.textContent='Result: '+r.result;showResultEffect('loss',total);}
-      saveHistory({name,player,choice:selectedChoice,amount:total,result:r.result,win,payout,round:r.round,time:new Date().toLocaleString('en-IN')});
-      await new Promise(x=>setTimeout(x,3000));
-      resetBet(); busy=false; idleRunning=true; if(typeof startIdleSpin==='function') startIdleSpin(); renderProfile();
-    }catch(e){busy=false;idleRunning=true;statusEl.textContent='Cloud error: '+e.message;lockBetControls(false);if(typeof startIdleSpin==='function') startIdleSpin();}
-  };}
+
+      /* 0-27s light spin, last 3s fast, exact stop at round end. */
+      await runTimedRoundSpin(r.result);
+
+      sync({
+        user:{
+          gameId:localStorage.getItem('mk_current_game_id'),
+          mobile:getAuthUser?.()?.mobile,
+          createdAt:getAuthUser?.()?.createdAt
+        },
+        wallet:r.wallet,
+        ledger:r.newLedger||[],
+        round:r.round
+      });
+
+      const win=!!r.win;
+      const payout=Number(r.payout||0);
+
+      if(win){
+        resultEl.textContent='You Won '+payout.toFixed(2)+' Virtual Points';
+        resultEl.style.borderColor='#22c55e';
+        statusEl.textContent='🎯 Result: '+r.result;
+        showResultEffect('win',total);
+      }else{
+        resultEl.textContent='Oops, You Lose';
+        resultEl.style.borderColor='#ef4444';
+        statusEl.textContent='🎯 Result: '+r.result;
+        showResultEffect('loss',total);
+      }
+
+      saveHistory({
+        name,player,choice:selectedChoice,amount:total,
+        result:r.result,win,payout,round:r.round,
+        time:new Date().toLocaleString('en-IN')
+      });
+
+      /* Wait for the next backend round before restarting light spin. */
+      while(true){
+        try{
+          const nr=await round();
+          if(String(nr.round||'')!==String(r.round||'')) break;
+        }catch(e){}
+        await new Promise(x=>setTimeout(x,120));
+      }
+
+      if(resultEffect) resultEffect.className='resultEffect';
+      resultEffect.innerHTML='';
+      resetBet();
+      busy=false;
+      idleRunning=true;
+      startNewRound();
+      renderProfile();
+
+    }catch(e){
+      busy=false;
+      idleRunning=true;
+      statusEl.textContent='Cloud error: '+e.message;
+      startNewRound();
+      renderProfile();
+    }
+  };
+  }
 
   setInterval(pull,3000);
   setInterval(async()=>{try{window.MK_GLOBAL_ROUND=await round();localStorage.setItem('mk_global_round',JSON.stringify(window.MK_GLOBAL_ROUND));}catch(e){}},1000);
