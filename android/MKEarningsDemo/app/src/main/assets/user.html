@@ -1193,31 +1193,108 @@ body{
 .mk-next-bet{display:none;text-align:center;padding:10px;margin-top:8px;border-radius:12px;background:#172033;color:#fff;font-size:12px}
 @media(max-width:560px){.mk-pro-launcher{grid-template-columns:1fr}}
 </style>
-<style id="mkProV2CSS">
-.mk-pro-hub{width:min(560px,calc(100% - 24px));margin:14px auto 18px;padding:14px;border-radius:24px;background:radial-gradient(circle at 20% 0%,rgba(37,99,235,.22),transparent 38%),linear-gradient(145deg,#071226,#111b33 55%,#0b1220);border:1px solid #26385f;box-shadow:0 18px 50px rgba(0,0,0,.30)}
-.mk-pro-hub-head{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 13px}.mk-pro-brand{font-size:22px;font-weight:1000;color:#fff}.mk-pro-caption{font-size:9px;color:#7f91b3;letter-spacing:1.2px;margin-top:3px}.mk-pro-badge{padding:7px 10px;border-radius:10px;background:#12264a;border:1px solid #2857a4;color:#76a9ff;font-size:10px;font-weight:1000}
-.mk-pro-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.mk-pro-game{position:relative;min-height:155px;padding:14px;text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:19px;color:#fff;cursor:pointer;overflow:hidden;box-shadow:0 10px 24px rgba(0,0,0,.22)}
-.mk-pro-game:before{content:"";position:absolute;right:-30px;bottom:-55px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.08)}
-.mk-pro-game.wingo{background:linear-gradient(145deg,#075985,#0f3b75 58%,#12234c)}.mk-pro-game.tower{background:linear-gradient(145deg,#164e63,#1e3a8a 58%,#18285a)}.mk-pro-game.mines{background:linear-gradient(145deg,#4c1d95,#312e81 58%,#171d52)}.mk-pro-game.lottery{background:linear-gradient(145deg,#92400e,#7c2d12 58%,#3d1b24)}
-.mk-pro-icon{font-size:35px;margin-bottom:9px}.mk-pro-game-name{font-size:17px;font-weight:1000}.mk-pro-game-desc{font-size:10px;line-height:1.4;color:#d4def0;margin-top:4px;max-width:190px}.mk-pro-play{position:absolute;bottom:12px;left:14px;font-size:10px;font-weight:1000;color:#9fd0ff}
-.mk-game-modal{background:rgba(1,5,15,.86)}.mk-game-sheet{background:linear-gradient(180deg,#081225,#0b1220)}.mk-game-head{height:58px;background:linear-gradient(90deg,#0b1a36,#101a2d);border-bottom:1px solid #253758}.mk-game-head b{font-size:17px}.mk-game-close{background:#17263f;border:1px solid #2b4167}
-@media(max-width:390px){.mk-pro-grid{grid-template-columns:1fr}.mk-pro-game{min-height:135px}}
+
+<style id="mkAuthProCSS">
+.authScreen{
+  background:
+    radial-gradient(circle at 50% 8%,rgba(19,52,96,.72),transparent 38%),
+    radial-gradient(circle at 50% 90%,rgba(0,93,180,.22),transparent 48%),
+    #030914;
+  padding:10px;
+}
+.authCard{
+  width:min(410px,94vw);
+  background:linear-gradient(180deg,rgba(7,20,39,.98),rgba(3,12,25,.99));
+  border:1px solid rgba(73,126,190,.34);
+  border-radius:24px;
+  padding:20px 18px 18px;
+  box-shadow:0 28px 90px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.05);
+  position:relative;
+  overflow:hidden;
+}
+.authCard:before{
+  content:"";position:absolute;left:-30%;right:-30%;bottom:-90px;height:210px;
+  background:radial-gradient(circle,rgba(0,123,255,.25),transparent 62%);
+  pointer-events:none;
+}
+.mkAuthLogo{
+  width:92px;height:92px;border-radius:50%;margin:2px auto 8px;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #f8d96a;
+  background:radial-gradient(circle at 35% 25%,#fff3a8 0,#e9a51b 24%,#070f1c 58%,#020812 100%);
+  box-shadow:0 0 0 5px rgba(248,217,106,.08),0 0 28px rgba(248,190,52,.22);
+  color:#ffd84d;font-size:31px;font-weight:1000;letter-spacing:-3px;
+  text-shadow:0 2px 8px rgba(0,0,0,.8);
+}
+.authBrand{
+  font-size:22px;font-weight:1000;text-align:center;
+  color:#ffd34d;text-transform:uppercase;letter-spacing:.5px;
+}
+.authSub{
+  text-align:center;color:#fff;font-size:10px;font-weight:900;
+  letter-spacing:1px;margin:4px 0 18px;
+}
+.authTabs{gap:0;margin-bottom:14px;background:#0a1629;border-radius:12px;padding:1px}
+.authTab{
+  border:0;background:transparent;color:#c4d0e2;border-radius:10px;
+  padding:12px;font-size:14px;
+}
+.authTab.active{
+  background:linear-gradient(135deg,#078cff,#0867e8);
+  color:#fff;box-shadow:0 7px 20px rgba(0,125,255,.24)
+}
+.authLabel{color:#b6c4d8;font-size:10px;letter-spacing:.2px;margin:11px 0 6px}
+.authInput{
+  padding:14px 14px;border-radius:11px;border:1px solid #a9b9cb;
+  background:linear-gradient(180deg,#f7fbff,#eaf2fb);color:#14233b;
+  font-size:14px;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)
+}
+.authInput::placeholder{color:#718198}
+.authBtn{
+  padding:14px;margin-top:14px;border-radius:12px;
+  background:linear-gradient(135deg,#0a92ff,#0871ee);
+  color:#fff;font-size:15px;box-shadow:0 9px 25px rgba(0,119,255,.25)
+}
+.authLink{color:#43b9ff;font-size:12px}
+.authBottomText{position:relative;text-align:center;color:#dbe4f0;font-size:12px;margin-top:15px}
+.authBottomText button{border:0;background:none;color:#32b8ff;font-weight:900;cursor:pointer;font-size:12px}
+.mkTermsRow{
+  position:relative;display:flex;align-items:flex-start;gap:9px;
+  margin-top:13px;color:#dce6f2;font-size:11px;line-height:1.45;
+}
+.mkTermsRow input{width:19px;height:19px;accent-color:#0b8dff;flex:0 0 auto;margin-top:0}
+.mkTermsRow label{cursor:pointer}.mkTermsLink{color:#3fb9ff;text-decoration:underline;font-weight:900}
+.mkTermsModal{
+  position:fixed;inset:0;z-index:30000;display:none;align-items:center;justify-content:center;
+  padding:16px;background:rgba(0,4,12,.86);backdrop-filter:blur(8px)
+}
+.mkTermsModal.show{display:flex}
+.mkTermsCard{
+  width:min(520px,94vw);max-height:86vh;display:flex;flex-direction:column;
+  background:#091426;border:1px solid #2b4770;border-radius:20px;
+  box-shadow:0 30px 100px #000;color:#e8eef7;overflow:hidden
+}
+.mkTermsHead{display:flex;justify-content:space-between;align-items:center;padding:15px 16px;border-bottom:1px solid #263957}
+.mkTermsHead b{font-size:15px}.mkTermsClose{border:0;background:#20314d;color:#fff;border-radius:9px;padding:7px 10px;font-weight:900}
+.mkTermsBody{overflow:auto;padding:16px;font-size:12px;line-height:1.65;color:#cbd7e8}
+.mkTermsBody h3{color:#ffd34d;margin:0 0 10px}.mkTermsBody ol{padding-left:20px}.mkTermsBody li{margin-bottom:9px}
+.mkTermsFoot{padding:12px 16px;border-top:1px solid #263957}.mkTermsAccept{width:100%;border:0;border-radius:11px;padding:12px;background:#0b82f3;color:#fff;font-weight:900}
+@media(max-width:520px){.authCard{padding:18px 15px}.mkAuthLogo{width:84px;height:84px}}
 </style>
 </head>
 
 <body>
-<div class="mk-pro-hub" id="mkProfessionalLaunchers">
-  <div class="mk-pro-hub-head">
-    <div><div class="mk-pro-brand">MK EARNINGS</div><div class="mk-pro-caption">PLAY SMART • DEMO GAMES</div></div>
-    <div class="mk-pro-badge">4 GAMES</div>
-  </div>
-  <div class="mk-pro-grid">
-    <button class="mk-pro-game wingo" data-open-game="wingo"><div class="mk-pro-icon">🎯</div><div class="mk-pro-game-name">WINGO</div><div class="mk-pro-game-desc">30 Seconds • Color + Big / Small / Tie</div><div class="mk-pro-play">PLAY NOW →</div></button>
-    <button class="mk-pro-game tower" data-open-game="tower"><div class="mk-pro-icon">🏰</div><div class="mk-pro-game-name">MK TOWER</div><div class="mk-pro-game-desc">Build • Safe / Trap • Cash Out</div><div class="mk-pro-play">PLAY NOW →</div></button>
-    <button class="mk-pro-game mines" data-open-game="mines"><div class="mk-pro-icon">💣</div><div class="mk-pro-game-name">MK MINES</div><div class="mk-pro-game-desc">2×2 • 4×4 • 5×5 • Find Safe</div><div class="mk-pro-play">PLAY NOW →</div></button>
-    <button class="mk-pro-game lottery" data-open-game="lottery"><div class="mk-pro-icon">🎟️</div><div class="mk-pro-game-name">MK LOTTERY</div><div class="mk-pro-game-desc">10 Players • 4-Digit Demo Draw</div><div class="mk-pro-play">PLAY NOW →</div></button>
-  </div>
+<div class="mk-pro-launcher" id="mkProfessionalLaunchers">
+  <button class="mk-pro-card tower" data-open-game="tower"><b>🏗️ MK TOWER</b><span>Climb floors • Safe / Trap • Cash Out</span></button>
+  <button class="mk-pro-card mines" data-open-game="mines"><b>💣 MK MINES</b><span>2×2 • 4×4 • 5×5 • Auto next bet</span></button>
+  <button class="mk-pro-card lottery" data-open-game="lottery"><b>🎟️ MK LOTTERY</b><span>10 players • 4-digit demo draw</span></button>
 </div>
+
+
+<!-- =========================================================
+     MK EARNINGS DEMO - 4 GAME LAYERS
+     All balances/prizes are virtual demo values only.
+========================================================= -->
 
 <section id="mkTowerLayer">
   <h2>🏗️ MK TOWER</h2>
@@ -1499,50 +1576,88 @@ renderDigits();renderPlayers();
 <!-- AUTH SCREEN -->
 <div class="authScreen" id="authScreen">
   <div class="authCard">
-    <div class="authBrand">MK Earnings</div>
-    <div class="authSub">Demo Account Login</div>
+    <div class="mkAuthLogo">MK</div>
+    <div class="authBrand">MK EARNINGS</div>
+    <div class="authSub">PLAY SMART • EARN FUN</div>
 
     <div class="authTabs">
-      <button class="authTab active" id="loginTab">Login</button>
-      <button class="authTab" id="registerTab">Register</button>
+      <button class="authTab" id="loginTab">Login</button>
+      <button class="authTab active" id="registerTab">Register</button>
     </div>
 
-    <div class="authForm show" id="loginForm">
-      <label class="authLabel">MOBILE NUMBER</label>
+    <div class="authForm" id="loginForm">
+      <label class="authLabel">Mobile Number</label>
       <input class="authInput" id="loginMobile" type="tel" inputmode="numeric" maxlength="10" placeholder="Enter mobile number">
-      <label class="authLabel">PASSWORD</label>
+
+      <label class="authLabel">Password</label>
       <input class="authInput" id="loginPassword" type="password" minlength="8" placeholder="Enter password">
-      <button class="authBtn" id="loginBtn">Login</button>
+
       <span class="authLink" id="forgotLink">Forgot Password?</span>
+      <button class="authBtn" id="loginBtn">Login</button>
       <div class="authMsg" id="loginMsg"></div>
+      <div class="authBottomText">Don't have an account? <button type="button" id="bottomRegisterBtn">Register</button></div>
     </div>
 
-    <div class="authForm" id="registerForm">
-      <label class="authLabel">MOBILE NUMBER</label>
+    <div class="authForm show" id="registerForm">
+      <label class="authLabel">Mobile Number</label>
       <input class="authInput" id="registerMobile" type="tel" inputmode="numeric" maxlength="10" placeholder="10 digit mobile number">
-      <label class="authLabel">PASSWORD</label>
+
+      <label class="authLabel">Password</label>
       <input class="authInput" id="registerPassword" type="password" minlength="8" placeholder="Minimum 8 characters">
-      <label class="authLabel">CONFIRM PASSWORD</label>
+
+      <label class="authLabel">Confirm Password</label>
       <input class="authInput" id="registerConfirm" type="password" minlength="8" placeholder="Re-enter password">
+
+      <div class="mkTermsRow">
+        <input type="checkbox" id="termsCheck">
+        <label for="termsCheck">I agree to the <span class="mkTermsLink" id="openTerms">Terms &amp; Conditions</span> and Privacy Policy.</label>
+      </div>
+
       <button class="authBtn" id="registerBtn">Register</button>
       <div class="authMsg" id="registerMsg"></div>
+      <div class="authBottomText">Already have an account? <button type="button" id="bottomLoginBtn">Login</button></div>
     </div>
 
     <div class="authForm" id="forgotForm">
-      <label class="authLabel">MOBILE NUMBER</label>
+      <label class="authLabel">Mobile Number</label>
       <input class="authInput" id="forgotMobile" type="tel" inputmode="numeric" maxlength="10" placeholder="Registered mobile number">
-      <label class="authLabel">OLD PASSWORD</label>
+      <label class="authLabel">Old Password</label>
       <input class="authInput" id="forgotOldPassword" type="password" placeholder="Enter old password">
-      <label class="authLabel">NEW PASSWORD</label>
+      <label class="authLabel">New Password</label>
       <input class="authInput" id="forgotNewPassword" type="password" minlength="8" placeholder="Minimum 8 characters">
-      <label class="authLabel">CONFIRM NEW PASSWORD</label>
+      <label class="authLabel">Confirm New Password</label>
       <input class="authInput" id="forgotConfirm" type="password" minlength="8" placeholder="Re-enter new password">
-      <button class="authBtn" id="resetPasswordBtn">Confirm & Save</button>
+      <button class="authBtn" id="resetPasswordBtn">Confirm &amp; Save</button>
       <span class="authLink" id="backLoginLink">← Back to Login</span>
       <div class="authMsg" id="forgotMsg"></div>
     </div>
+  </div>
+</div>
 
-    <div class="authHint">Demo only: login details are stored in this browser's localStorage.</div>
+<div class="mkTermsModal" id="mkTermsModal">
+  <div class="mkTermsCard">
+    <div class="mkTermsHead">
+      <b>MK EARNINGS – TERMS &amp; CONDITIONS</b>
+      <button class="mkTermsClose" id="closeTerms">✕</button>
+    </div>
+    <div class="mkTermsBody">
+      <h3>Terms &amp; Conditions</h3>
+      <ol>
+        <li>This application is provided for entertainment and Earning purposes only.</li>
+        <li>Users must be at least 18 years of age to use the platform.</li>
+        <li>Users are responsible for understanding the rules of each game before participating.</li>
+        <li>All game outcomes are generated according to the game's programmed rules and cannot be guaranteed or predicted.</li>
+        <li><b>Users understand and acknowledge that game participation involves the possibility of losing the amount entered in a game. MK EARNINGS shall not be responsible for any loss incurred by the user.</b></li>
+        <li>Users must not use the platform for any illegal or unauthorized activity.</li>
+        <li>Each user is responsible for keeping their login credentials secure.</li>
+        <li>By registering, the user confirms that they have read, understood, and agreed to these Terms &amp; Conditions and the Privacy Policy.</li>
+        <li>The platform may modify, suspend, or discontinue any game or feature at any time.</li>
+        <li>By continuing to use the application, the user accepts all applicable terms and conditions.</li>
+      </ol>
+    </div>
+    <div class="mkTermsFoot">
+      <button class="mkTermsAccept" id="acceptTermsBtn">I Have Read &amp; Agree</button>
+    </div>
   </div>
 </div>
 
@@ -4118,13 +4233,7 @@ window.MK_CLOUD_ENABLED=true;
   });
   document.querySelectorAll('[data-open-game]').forEach(btn=>{
     btn.onclick=()=>{
-      const key=btn.dataset.openGame;
-      if(key==='wingo'){
-        const open=document.getElementById('openWingo');
-        if(open) open.click();
-        return;
-      }
-      const m=document.getElementById('mkModal_'+key);
+      const m=document.getElementById('mkModal_'+btn.dataset.openGame);
       if(m)m.classList.add('open');
     };
   });
@@ -4149,11 +4258,132 @@ window.MK_CLOUD_ENABLED=true;
   });
 })();
 </script>
-<script id="mkAutoNextBetV2">
+
+<script id="mkFinalAuthPatch">
 (function(){
-  const clearTower=()=>{const b=document.getElementById('mkTowerBoard'),c=document.getElementById('mkTowerCash'),f=document.getElementById('mkTowerFloor'),m=document.getElementById('mkTowerMulti');if(b)b.innerHTML='';if(c)c.disabled=true;if(f)f.textContent='0';if(m)m.textContent='1.00×';};
-  const clearMines=()=>{const g=document.getElementById('mkMinesGrid'),c=document.getElementById('mkMineCash'),s=document.getElementById('mkMineSafe'),m=document.getElementById('mkMineMulti');if(g)g.innerHTML='';if(c)c.disabled=true;if(s)s.textContent='0';if(m)m.textContent='1.00×';};
-  document.addEventListener('click',e=>{if(e.target.closest('#mkMinesGrid .mkMineCell.mine'))setTimeout(clearMines,1200);if(e.target.closest('#mkTowerBoard .mkCell.trap'))setTimeout(clearTower,1200);});
+  const $=id=>document.getElementById(id);
+  const terms=$('termsCheck'), modal=$('mkTermsModal');
+
+  $('openTerms').onclick=(e)=>{e.preventDefault();modal.classList.add('show')};
+  $('closeTerms').onclick=()=>modal.classList.remove('show');
+  $('acceptTermsBtn').onclick=()=>{terms.checked=true;modal.classList.remove('show')};
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('show')});
+
+  $('bottomRegisterBtn').onclick=()=>setAuthMode('register');
+  $('bottomLoginBtn').onclick=()=>setAuthMode('login');
+
+  // First-time app opens on Register. Existing logged-in users continue to the app.
+  if(!localStorage.getItem('mk_logged_in') && !localStorage.getItem('mk_cloud_token')){
+    setAuthMode('register');
+  }
+
+  // Final single registration handler: validates terms and switches to Login after success.
+  const reg=$('registerBtn');
+  if(reg){
+    reg.onclick=async()=>{
+      const mobile=$('registerMobile').value.trim();
+      const password=$('registerPassword').value;
+      const confirm=$('registerConfirm').value;
+      const msg=$('registerMsg');
+
+      if(!/^[0-9]{10}$/.test(mobile)){
+        msg.textContent='Enter a valid 10 digit mobile number.';msg.style.color='#ff8f98';return;
+      }
+      if(password.length<8){
+        msg.textContent='Password must be at least 8 characters.';msg.style.color='#ff8f98';return;
+      }
+      if(password!==confirm){
+        msg.textContent='Password and confirm password do not match.';msg.style.color='#ff8f98';return;
+      }
+      if(!terms.checked){
+        msg.textContent='Please read and agree to the Terms & Conditions.';msg.style.color='#ff8f98';return;
+      }
+
+      try{
+        reg.disabled=true;
+        msg.textContent='Creating account...';msg.style.color='#9fc7ff';
+
+        let r;
+        if(typeof window.register==='function' && window.MK_CLOUD_ENABLED===true){
+          r=await window.register(mobile,password);
+        }else{
+          const users=typeof getAuthUsers==='function'?getAuthUsers():[];
+          if(users.some(x=>String(x.mobile)===mobile)) throw new Error('This mobile number is already registered. Please login.');
+          const gameId=typeof getNextGameId==='function'?getNextGameId():String(Date.now());
+          users.push({mobile,password,gameId,createdAt:Date.now()});
+          if(typeof saveAuthUsers==='function')saveAuthUsers(users);
+          if(typeof setCurrentGameId==='function')setCurrentGameId(gameId);
+          r={gameId,createdAt:Date.now()};
+        }
+
+        try{
+          const users=typeof getAuthUsers==='function'?getAuthUsers():[];
+          if(!users.some(x=>String(x.mobile)===mobile)){
+            users.push({mobile,password,gameId:String(r.gameId),createdAt:Number(r.createdAt||Date.now())});
+            if(typeof saveAuthUsers==='function')saveAuthUsers(users);
+          }
+        }catch(e){}
+
+        $('loginMobile').value=mobile;
+        $('loginPassword').value='';
+        terms.checked=false;
+        msg.textContent='Registration successful. Please login.';
+        msg.style.color='#9cffb6';
+
+        setTimeout(()=>setAuthMode('login'),900);
+      }catch(e){
+        msg.textContent='Registration failed: '+(e.message||'Please try again.');
+        msg.style.color='#ff8f98';
+      }finally{
+        reg.disabled=false;
+      }
+    };
+  }
+
+  // Cloud-aware login: registrations created through the cloud must authenticate through the same backend.
+  const login=$('loginBtn');
+  if(login){
+    login.onclick=async()=>{
+      const mobile=$('loginMobile').value.trim();
+      const password=$('loginPassword').value;
+      const msg=$('loginMsg');
+
+      if(!/^[0-9]{10}$/.test(mobile)){
+        msg.textContent='Enter a valid 10 digit mobile number.';msg.style.color='#ff8f98';return;
+      }
+      if(password.length<8){
+        msg.textContent='Password must be at least 8 characters.';msg.style.color='#ff8f98';return;
+      }
+
+      try{
+        login.disabled=true;
+        msg.textContent='Signing in...';msg.style.color='#9fc7ff';
+
+        if(window.MK_CLOUD_ENABLED===true && window.MKCloud && typeof window.MKCloud.cloudLogin==='function'){
+          const r=await window.MKCloud.cloudLogin(mobile,password);
+          if(r && r.gameId) setCurrentGameId(r.gameId);
+        }else{
+          const user=findUserByMobile(normalizeMobile(mobile));
+          if(!user) throw new Error('No registered account for this mobile number. Please register first.');
+          if(String(user.password)!==String(password)) throw new Error('Wrong mobile number or password.');
+          setCurrentGameId(user.gameId);
+          localStorage.setItem('mk_logged_in','1');
+        }
+
+        msg.textContent='Login successful.';msg.style.color='#9cffb6';
+        setTimeout(()=>{
+          hideAuth();
+          if(typeof renderProfile==='function')renderProfile();
+        },350);
+      }catch(e){
+        localStorage.removeItem('mk_logged_in');
+        msg.textContent=e.message||'Login failed. Please try again.';
+        msg.style.color='#ff8f98';
+      }finally{
+        login.disabled=false;
+      }
+    };
+  }
 })();
 </script>
 </body>
