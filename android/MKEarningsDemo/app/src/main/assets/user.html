@@ -1140,9 +1140,324 @@ body{
 .wingoPanel{margin-top:9px;padding:13px;border-radius:16px;background:#211d24;border:1px solid #302a34}.panelLabel{display:flex;justify-content:space-between;align-items:center;margin:5px 0 8px;color:#ddd;font-size:12px;font-weight:900}.panelLabel span{color:#ffd166}.numberGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.numberBtn,.sizeBtn,.tieWingo,.amountRowWingo button{border:1px solid #38313d;background:#17131a;color:#fff;border-radius:10px;padding:11px;font-weight:900;cursor:pointer}.numberBtn.selected{background:#8f47d8;border-color:#d7b7ff}.sizeRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sizeBtn{font-size:15px}.bigWingo{background:linear-gradient(135deg,#e7a126,#df8c22);border:0}.smallWingo{background:linear-gradient(135deg,#5794dd,#467fd0);border:0}.tieWingo{width:100%;background:#8f47d8;border:0;margin-bottom:10px}.amountRowWingo{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.amountRowWingo button.active{background:#16b364;border-color:#16b364}.wingoBetInfo{display:flex;justify-content:space-between;margin:12px 0;color:#bdb7c4;font-size:13px}.wingoBetInfo b{color:#fff}.wingoBetBtn{width:100%;border:0;border-radius:12px;padding:14px;background:linear-gradient(90deg,#17b36a,#22c55e);color:#fff;font-size:16px;font-weight:1000;cursor:pointer}.wingoStatus{text-align:center;min-height:22px;margin-top:9px;color:#bfb7c8;font-size:12px;font-weight:800}.wingoHistory{margin-top:9px}.wingoHistoryHead{display:grid;grid-template-columns:1.6fr .6fr .9fr .7fr;gap:5px;padding:9px 8px;color:#aaa2af;font-size:10px;font-weight:900}.wingoHistory .gameHistoryList{max-height:340px;overflow:auto}.wingoHistory .gameHistoryRow{display:grid;grid-template-columns:1.6fr .6fr .9fr .7fr;gap:5px;align-items:center;padding:11px 8px;border-top:1px solid #302a32;font-size:11px}.gameHistoryResult{font-size:13px}.gameHistoryResult.big{color:#e7a126}.gameHistoryResult.small{color:#5794dd}.gameHistoryResult.tie{color:#b66cff}.historyNum{font-size:17px;font-weight:1000}.historyColor{font-weight:900}.historyColor.green{color:#20c777}.historyColor.violet{color:#b66cff}.historyColor.red{color:#ff4b52}.legacyCompat{display:none!important}
 @media(max-width:480px){.wingoScreen{width:100%}.amountRowWingo{grid-template-columns:repeat(3,1fr)}.wingoHistoryHead,.wingoHistory .gameHistoryRow{grid-template-columns:1.55fr .5fr .85fr .65fr;font-size:10px}.periodBox b{font-size:12px}}
 </style>
+
+<style>
+/* ===== MK TOWER 2ND LAYER - DEMO ===== */
+#mkTowerLayer{margin:18px 12px;padding:16px;border-radius:22px;background:linear-gradient(145deg,#101827,#17243a);color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+#mkTowerLayer h2,#mkMinesLayer h2,#mkLotteryLayer h2{margin:0 0 8px;font-size:22px}
+.mkGameSub{font-size:12px;opacity:.75;margin-bottom:12px}
+.mkDiffs,.mkBetRow,.mkMineModes{display:flex;gap:8px;flex-wrap:wrap}
+.mkBtn{border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
+.mkBtn.primary{background:#2563eb;color:#fff}.mkBtn.green{background:#16a34a;color:#fff}.mkBtn.red{background:#dc2626;color:#fff}.mkBtn.dark{background:#263449;color:#fff}
+.mkDiff.active,.mkMineMode.active{outline:2px solid #fff}
+.mkAmount{min-width:90px;text-align:center;font-weight:900;padding:10px;border-radius:12px;background:#0b1220}
+.mkBoard{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:14px 0}
+.mkCell{min-height:48px;border:0;border-radius:11px;background:#334155;color:#fff;font-weight:900;cursor:pointer}
+.mkCell.safe{background:#16a34a}.mkCell.trap{background:#dc2626}
+.mkStats{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:10px 0;font-weight:800}
+.mkHistory{margin-top:12px;max-height:180px;overflow:auto;font-size:12px}
+.mkHistory div{padding:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+/* ===== MK MINES 3RD LAYER - DEMO ===== */
+#mkMinesLayer{margin:18px 12px;padding:16px;border-radius:22px;background:linear-gradient(145deg,#111827,#1f2937);color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+#mkMinesGrid{display:grid;gap:7px;margin:14px 0}
+.mkMineCell{aspect-ratio:1;border:0;border-radius:10px;background:#475569;color:#fff;font-size:22px;font-weight:900;cursor:pointer}
+.mkMineCell.safe{background:#16a34a}.mkMineCell.mine{background:#dc2626}
+/* ===== MK LOTTERY 4TH LAYER - DEMO ===== */
+#mkLotteryLayer{margin:18px 12px;padding:16px;border-radius:22px;background:linear-gradient(145deg,#172554,#312e81);color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.mkDigits{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:10px 0}
+.mkDigit{border:0;border-radius:8px;padding:9px 2px;background:#334155;color:#fff;font-weight:900;cursor:pointer}
+.mkDigit.used{background:#64748b;opacity:.45;cursor:not-allowed}
+.mkCode{font-size:24px;letter-spacing:5px;font-weight:900;text-align:center;padding:10px;background:#0f172a;border-radius:12px}
+.mkPlayers{margin-top:12px;max-height:230px;overflow:auto}
+.mkPlayer{display:flex;justify-content:space-between;gap:8px;padding:8px;border-bottom:1px solid rgba(255,255,255,.1);font-size:12px}
+.mkPrize{margin-top:12px;padding:10px;background:rgba(255,255,255,.08);border-radius:12px;font-size:13px}
+.mkTimer{font-size:28px;text-align:center;font-weight:900;margin:10px 0}
+@media(max-width:520px){.mkDigits{grid-template-columns:repeat(5,1fr)}}
+</style>
+
 </head>
 
 <body>
+
+<!-- =========================================================
+     MK EARNINGS DEMO - 4 GAME LAYERS
+     All balances/prizes are virtual demo values only.
+========================================================= -->
+
+<section id="mkTowerLayer">
+  <h2>🏗️ MK TOWER</h2>
+  <div class="mkGameSub">2nd Layer • Demo / Virtual Balance</div>
+  <div class="mkDiffs">
+    <button class="mkBtn mkDiff primary active" data-diff="easy">🟢 EASY</button>
+    <button class="mkBtn mkDiff dark" data-diff="normal">🟡 NORMAL</button>
+    <button class="mkBtn mkDiff dark" data-diff="hard">🔴 HARD</button>
+  </div>
+  <div class="mkBetRow" style="margin-top:10px">
+    <button class="mkBtn dark" id="mkTowerMinus">−</button>
+    <div class="mkAmount" id="mkTowerBet">₹5</div>
+    <button class="mkBtn dark" id="mkTowerPlus">+</button>
+    <button class="mkBtn primary" id="mkTowerStart">START TOWER</button>
+  </div>
+  <div class="mkStats">
+    <span>Floor: <b id="mkTowerFloor">0</b></span>
+    <span>Multiplier: <b id="mkTowerMulti">1.00×</b></span>
+  </div>
+  <div id="mkTowerBoard" class="mkBoard"></div>
+  <button class="mkBtn green" id="mkTowerCash" style="width:100%" disabled>CASH OUT</button>
+  <div class="mkHistory" id="mkTowerHistory"></div>
+</section>
+
+<section id="mkMinesLayer">
+  <h2>💣 MK MINES</h2>
+  <div class="mkGameSub">3rd Layer • Demo / Virtual Balance</div>
+  <div class="mkMineModes">
+    <button class="mkBtn mkMineMode primary active" data-size="2">2×2</button>
+    <button class="mkBtn mkMineMode dark" data-size="4">4×4</button>
+    <button class="mkBtn mkMineMode dark" data-size="5">5×5</button>
+  </div>
+  <div class="mkBetRow" style="margin-top:10px">
+    <button class="mkBtn dark" id="mkMineMinus">−</button>
+    <div class="mkAmount" id="mkMineBet">₹5</div>
+    <button class="mkBtn dark" id="mkMinePlus">+</button>
+    <button class="mkBtn primary" id="mkMineStart">START MINES</button>
+  </div>
+  <div class="mkStats">
+    <span>Safe: <b id="mkMineSafe">0</b></span>
+    <span>Multiplier: <b id="mkMineMulti">1.00×</b></span>
+  </div>
+  <div id="mkMinesGrid"></div>
+  <button class="mkBtn green" id="mkMineCash" style="width:100%" disabled>CASH OUT</button>
+  <div class="mkHistory" id="mkMineHistory"></div>
+</section>
+
+<section id="mkLotteryLayer">
+  <h2>🎟️ MK LOTTERY</h2>
+  <div class="mkGameSub">4th Layer • Demo / Virtual Balance • 10 players maximum</div>
+  <div class="mkStats">
+    <span>Players: <b id="mkLotPlayers">0/10</b></span>
+    <span>Pool: <b id="mkLotPool">₹0</b></span>
+  </div>
+  <div class="mkTimer" id="mkLotTimer">WAITING</div>
+
+  <div class="mkCode" id="mkLotCode">----</div>
+  <div class="mkGameSub" style="margin-top:8px">Select 4 different digits. Minimum/maximum demo bet: ₹30.</div>
+  <div class="mkDigits" id="mkDigits"></div>
+  <button class="mkBtn primary" id="mkLotConfirm" style="width:100%">CONFIRM ₹30 BET</button>
+
+  <div class="mkPlayers" id="mkLotPlayerList"></div>
+
+  <div class="mkPrize">
+    <b>🏆 Prize Pool</b><br>
+    1st ₹70 • 2nd ₹45 • 3rd ₹35 • 4th ₹30<br>
+    5th ₹25 • 6th ₹25 • 7th ₹20 • 8th ₹20<br>
+    Total prizes: <b>₹270</b>
+  </div>
+  <div id="mkLotResult" class="mkHistory"></div>
+</section>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- shared helpers ---------- */
+const $=id=>document.getElementById(id);
+const money=n=>'₹'+Number(n).toFixed(0);
+
+/* ================= TOWER ================= */
+const towerCfg={
+ easy:{floors:5,traps:1,multi:[1.15,1.35,1.60,2.00,2.50]},
+ normal:{floors:7,traps:2,multi:[1.20,1.50,1.90,2.40,3.10,4.00,5.00]},
+ hard:{floors:10,traps:3,multi:[1.30,1.70,2.20,2.90,3.80,4.90,6.20,7.50,8.70,10.00]}
+};
+let towerDiff='easy',towerBet=5,towerFloor=0,towerActive=false,towerMulti=1;
+let towerTraps=[];
+function shuffle(a){return a.sort(()=>Math.random()-.5)}
+function renderTowerHistory(){
+  const h=JSON.parse(localStorage.getItem('mkTowerHistory')||'[]');
+  $('mkTowerHistory').innerHTML=h.slice(0,15).map(x=>`<div>${x}</div>`).join('')||'No tower history yet.';
+}
+function towerHistory(s){
+  const h=JSON.parse(localStorage.getItem('mkTowerHistory')||'[]');
+  h.unshift(new Date().toLocaleTimeString()+' — '+s);
+  localStorage.setItem('mkTowerHistory',JSON.stringify(h.slice(0,50)));
+  renderTowerHistory();
+}
+function drawTower(){
+  const cfg=towerCfg[towerDiff];
+  $('mkTowerBoard').innerHTML='';
+  if(!towerActive)return;
+  for(let i=0;i<5;i++){
+    const b=document.createElement('button');
+    b.className='mkCell';
+    b.textContent='?';
+    b.onclick=()=>towerPick(i);
+    $('mkTowerBoard').appendChild(b);
+  }
+}
+function startTower(){
+  if(towerActive)return;
+  const cfg=towerCfg[towerDiff];
+  towerFloor=0;towerMulti=1;towerActive=true;
+  towerTraps=shuffle([...Array(5).keys()]).slice(0,cfg.traps);
+  $('mkTowerFloor').textContent='1/'+cfg.floors;
+  $('mkTowerMulti').textContent='1.00×';
+  $('mkTowerCash').disabled=false;
+  drawTower();
+}
+function towerPick(i){
+  if(!towerActive)return;
+  const cfg=towerCfg[towerDiff];
+  const cells=[...document.querySelectorAll('#mkTowerBoard .mkCell')];
+  if(towerTraps.includes(i)){
+    cells.forEach((c,j)=>{if(towerTraps.includes(j)){c.classList.add('trap');c.textContent='💣'}});
+    towerActive=false;$('mkTowerCash').disabled=true;
+    towerHistory(`💥 Lost ₹${towerBet} — ${towerDiff.toUpperCase()} floor ${towerFloor}`);
+    return;
+  }
+  cells[i].classList.add('safe');cells[i].textContent='✓';
+  towerMulti=cfg.multi[towerFloor]||cfg.multi.at(-1);
+  $('mkTowerMulti').textContent=towerMulti.toFixed(2)+'×';
+  towerFloor++;
+  if(towerFloor>=cfg.floors){
+    towerActive=false;$('mkTowerCash').disabled=true;
+    towerHistory(`🏆 Completed ${towerDiff.toUpperCase()} — ₹${(towerBet*towerMulti).toFixed(0)}`);
+    return;
+  }
+  towerTraps=shuffle([...Array(5).keys()]).slice(0,cfg.traps);
+  $('mkTowerFloor').textContent=(towerFloor+1)+'/'+cfg.floors;
+  drawTower();
+}
+$('mkTowerStart').onclick=startTower;
+$('mkTowerCash').onclick=()=>{
+ if(!towerActive)return;
+ const win=towerBet*towerMulti;towerActive=false;$('mkTowerCash').disabled=true;
+ towerHistory(`💰 Cashed out ₹${win.toFixed(0)} at ${towerMulti.toFixed(2)}×`);
+};
+document.querySelectorAll('.mkDiff').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.mkDiff').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');towerDiff=b.dataset.diff;
+});
+$('mkTowerMinus').onclick=()=>{towerBet=Math.max(5,towerBet-5);$('mkTowerBet').textContent=money(towerBet)};
+$('mkTowerPlus').onclick=()=>{towerBet=Math.min(1000,towerBet+5);$('mkTowerBet').textContent=money(towerBet)};
+renderTowerHistory();
+
+/* ================= MINES ================= */
+let mineSize=2,mineCount=1,mineBet=5,mineActive=false,mineSafe=0,mineMulti=1,mineMap=[];
+function mineSettings(){
+  if(mineSize===2)return 1;
+  if(mineSize===4)return 4;
+  return 6;
+}
+function renderMineHistory(){
+ const h=JSON.parse(localStorage.getItem('mkMineHistory')||'[]');
+ $('mkMineHistory').innerHTML=h.slice(0,15).map(x=>`<div>${x}</div>`).join('')||'No mines history yet.';
+}
+function mineHistory(s){
+ const h=JSON.parse(localStorage.getItem('mkMineHistory')||'[]');h.unshift(new Date().toLocaleTimeString()+' — '+s);
+ localStorage.setItem('mkMineHistory',JSON.stringify(h.slice(0,50)));renderMineHistory();
+}
+function startMines(){
+ if(mineActive)return;
+ mineCount=mineSettings();mineActive=true;mineSafe=0;mineMulti=1;
+ const total=mineSize*mineSize;
+ mineMap=shuffle([...Array(total).keys()]).slice(0,mineCount);
+ $('mkMineSafe').textContent='0';$('mkMineMulti').textContent='1.00×';$('mkMineCash').disabled=false;
+ const g=$('mkMinesGrid');g.style.gridTemplateColumns=`repeat(${mineSize},1fr)`;g.innerHTML='';
+ for(let i=0;i<total;i++){
+  const b=document.createElement('button');b.className='mkMineCell';b.textContent='?';
+  b.onclick=()=>minePick(i,b);g.appendChild(b);
+ }
+}
+function minePick(i,b){
+ if(!mineActive||b.disabled)return;
+ b.disabled=true;
+ if(mineMap.includes(i)){
+  b.classList.add('mine');b.textContent='💣';
+  mineMap.forEach(m=>{const c=$('mkMinesGrid').children[m];c.classList.add('mine');c.textContent='💣'});
+  mineActive=false;$('mkMineCash').disabled=true;
+  mineHistory(`💥 Mine hit — Lost ₹${mineBet}`);
+  return;
+ }
+ mineSafe++;mineMulti=1+(mineSafe*0.35);
+ b.classList.add('safe');b.textContent='💎';
+ $('mkMineSafe').textContent=mineSafe;$('mkMineMulti').textContent=mineMulti.toFixed(2)+'×';
+ if(mineSafe>=mineSize*mineSize-mineCount){
+   mineActive=false;$('mkMineCash').disabled=true;
+   mineHistory(`🏆 Cleared ${mineSize}×${mineSize} — ₹${(mineBet*mineMulti).toFixed(0)}`);
+ }
+}
+$('mkMineStart').onclick=startMines;
+$('mkMineCash').onclick=()=>{
+ if(!mineActive)return;
+ const win=mineBet*mineMulti;mineActive=false;$('mkMineCash').disabled=true;
+ mineHistory(`💰 Cashed out ₹${win.toFixed(0)} at ${mineMulti.toFixed(2)}×`);
+};
+document.querySelectorAll('.mkMineMode').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.mkMineMode').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');mineSize=Number(b.dataset.size);
+});
+$('mkMineMinus').onclick=()=>{mineBet=Math.max(5,mineBet-5);$('mkMineBet').textContent=money(mineBet)};
+$('mkMinePlus').onclick=()=>{mineBet=Math.min(1000,mineBet+5);$('mkMineBet').textContent=money(mineBet)};
+renderMineHistory();
+
+/* ================= LOTTERY ================= */
+const prize=[70,45,35,30,25,25,20,20];
+let lotPlayers=[],lotSelected=[],lotRunning=false,lotSeconds=0,lotTimer=null;
+function renderDigits(){
+ $('mkDigits').innerHTML='';
+ for(let d=0;d<=9;d++){
+  const b=document.createElement('button');b.className='mkDigit';b.textContent=d;
+  b.onclick=()=>selectDigit(d,b);$('mkDigits').appendChild(b);
+ }
+}
+function selectDigit(d,b){
+ if(lotRunning||lotSelected.length>=4||lotSelected.includes(d))return;
+ lotSelected.push(d);b.disabled=true;b.classList.add('used');
+ $('mkLotCode').textContent=lotSelected.join('');
+}
+function resetDigits(){lotSelected=[];$('mkLotCode').textContent='----';renderDigits()}
+function renderPlayers(){
+ $('mkLotPlayers').textContent=lotPlayers.length+'/10';
+ $('mkLotPool').textContent=money(lotPlayers.length*30);
+ $('mkLotPlayerList').innerHTML=lotPlayers.map((p,i)=>`<div class="mkPlayer"><span>#${i+1} ${p.name}</span><b>${p.code}</b></div>`).join('');
+}
+function codeUsed(code){return lotPlayers.some(p=>p.code===code)}
+function lotteryResult(){
+ lotRunning=false;clearInterval(lotTimer);
+ $('mkLotTimer').textContent='DRAWING...';
+ setTimeout(()=>{
+   const shuffled=shuffle([...lotPlayers]);
+   const winners=shuffled.slice(0,8).map((p,i)=>({...p,prize:prize[i]}));
+   $('mkLotResult').innerHTML='<b>🎉 DEMO RESULT</b>'+winners.map((w,i)=>`<div>${i+1}. ${w.code} — ${w.name} — <b>₹${w.prize}</b></div>`).join('');
+   $('mkLotResult').innerHTML+=`<div style="margin-top:8px"><b>10 players pool ₹${lotPlayers.length*30} • prizes ₹270</b></div>`;
+   $('mkLotTimer').textContent='DRAW COMPLETE';
+   lotPlayers=[];resetDigits();renderPlayers();
+ },1200);
+}
+function startLotteryTimer(){
+ if(lotPlayers.length!==10||lotRunning)return;
+ lotRunning=true;lotSeconds=20*60;$('mkLotTimer').textContent='20:00';
+ lotTimer=setInterval(()=>{
+  lotSeconds--;
+  const m=String(Math.floor(lotSeconds/60)).padStart(2,'0'),s=String(lotSeconds%60).padStart(2,'0');
+  $('mkLotTimer').textContent=m+':'+s;
+  if(lotSeconds<=0)lotteryResult();
+ },1000);
+}
+$('mkLotConfirm').onclick=()=>{
+ if(lotRunning)return;
+ if(lotPlayers.length>=10){alert('10 players complete. Betting closed.');return}
+ if(lotSelected.length!==4){alert('Select 4 digits.');return}
+ const code=lotSelected.join('');
+ if(codeUsed(code)){alert('This 4-digit code is already selected. Choose another code.');return}
+ lotPlayers.push({name:'Player '+(lotPlayers.length+1),code});
+ resetDigits();renderPlayers();
+ if(lotPlayers.length===10)startLotteryTimer();
+};
+renderDigits();renderPlayers();
+})();
+</script>
+
 
 <div id="resultEffect" class="resultEffect"></div>
 
@@ -2290,7 +2605,7 @@ function getAuthUser(){
   return users.find(u=>String(u.gameId)===String(currentId)) || null;
 }
 function normalizeMobile(mobile){
-  return String(mobile||'').replace(/[^0-9]/g,'');
+  return String(mobile||'').replace(/\\D/g,'');
 }
 function findUserByMobile(mobile){
   const target=normalizeMobile(mobile);
