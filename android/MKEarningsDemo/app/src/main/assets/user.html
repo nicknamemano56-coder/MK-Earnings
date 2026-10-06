@@ -1140,77 +1140,9 @@ body{
 .wingoPanel{margin-top:9px;padding:13px;border-radius:16px;background:#211d24;border:1px solid #302a34}.panelLabel{display:flex;justify-content:space-between;align-items:center;margin:5px 0 8px;color:#ddd;font-size:12px;font-weight:900}.panelLabel span{color:#ffd166}.numberGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.numberBtn,.sizeBtn,.tieWingo,.amountRowWingo button{border:1px solid #38313d;background:#17131a;color:#fff;border-radius:10px;padding:11px;font-weight:900;cursor:pointer}.numberBtn.selected{background:#8f47d8;border-color:#d7b7ff}.sizeRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sizeBtn{font-size:15px}.bigWingo{background:linear-gradient(135deg,#e7a126,#df8c22);border:0}.smallWingo{background:linear-gradient(135deg,#5794dd,#467fd0);border:0}.tieWingo{width:100%;background:#8f47d8;border:0;margin-bottom:10px}.amountRowWingo{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.amountRowWingo button.active{background:#16b364;border-color:#16b364}.wingoBetInfo{display:flex;justify-content:space-between;margin:12px 0;color:#bdb7c4;font-size:13px}.wingoBetInfo b{color:#fff}.wingoBetBtn{width:100%;border:0;border-radius:12px;padding:14px;background:linear-gradient(90deg,#17b36a,#22c55e);color:#fff;font-size:16px;font-weight:1000;cursor:pointer}.wingoStatus{text-align:center;min-height:22px;margin-top:9px;color:#bfb7c8;font-size:12px;font-weight:800}.wingoHistory{margin-top:9px}.wingoHistoryHead{display:grid;grid-template-columns:1.6fr .6fr .9fr .7fr;gap:5px;padding:9px 8px;color:#aaa2af;font-size:10px;font-weight:900}.wingoHistory .gameHistoryList{max-height:340px;overflow:auto}.wingoHistory .gameHistoryRow{display:grid;grid-template-columns:1.6fr .6fr .9fr .7fr;gap:5px;align-items:center;padding:11px 8px;border-top:1px solid #302a32;font-size:11px}.gameHistoryResult{font-size:13px}.gameHistoryResult.big{color:#e7a126}.gameHistoryResult.small{color:#5794dd}.gameHistoryResult.tie{color:#b66cff}.historyNum{font-size:17px;font-weight:1000}.historyColor{font-weight:900}.historyColor.green{color:#20c777}.historyColor.violet{color:#b66cff}.historyColor.red{color:#ff4b52}.legacyCompat{display:none!important}
 @media(max-width:480px){.wingoScreen{width:100%}.amountRowWingo{grid-template-columns:repeat(3,1fr)}.wingoHistoryHead,.wingoHistory .gameHistoryRow{grid-template-columns:1.55fr .5fr .85fr .65fr;font-size:10px}.periodBox b{font-size:12px}}
 </style>
-
-<style id="mkTowerStyles">
-#mkTowerLauncher{margin:12px 0}
-#mkTowerLauncher button{width:100%;padding:15px;border:0;border-radius:14px;background:linear-gradient(135deg,#1769e0,#5b8cff);color:#fff;font-size:18px;font-weight:900;cursor:pointer}
-#mkTowerModal{display:none;position:fixed;inset:0;z-index:99999;background:#07101eee;overflow:auto;padding:18px}
-#mkTowerModal.show{display:block}
-.mkTowerBox{max-width:480px;margin:0 auto;background:#f3f6fb;color:#172033;border-radius:20px;padding:15px;min-height:95vh;font-family:Arial,sans-serif}
-.mkTowerHead{background:linear-gradient(135deg,#1769e0,#5b8cff);color:#fff;border-radius:18px;padding:16px}
-.mkTowerHead h2{margin:0}.mkTowerBalance{margin-top:10px;padding:10px;background:#ffffff22;border-radius:10px;display:flex;justify-content:space-between}
-.mkTowerCard{background:#fff;border-radius:18px;padding:15px;margin-top:12px;box-shadow:0 6px 20px #dce3ee}
-.mkTowerTitle{font-weight:900;margin-bottom:11px}
-.mkTowerModes{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.mkTowerMode{padding:10px 3px;border:1px solid #d9e1ee;border-radius:11px;background:#f8faff;font-weight:800;cursor:pointer}
-.mkTowerMode.active{background:#1769e0;color:#fff}
-.mkTowerMode small{display:block;font-size:10px;margin-top:3px}
-.mkTowerBet{display:flex;justify-content:center;align-items:center;gap:18px;margin:15px}
-.mkTowerCircle{width:44px;height:44px;border:0;border-radius:50%;font-size:24px;font-weight:bold;cursor:pointer}
-.mkTowerAmount{font-size:24px;font-weight:900;min-width:80px;text-align:center}
-.mkTowerStart,.mkTowerCash{width:100%;border:0;border-radius:12px;padding:13px;color:#fff;font-weight:900;font-size:15px;cursor:pointer}
-.mkTowerStart{background:#1769e0}.mkTowerCash{background:#16a36a;margin-top:8px}
-.mkTowerStart:disabled,.mkTowerCash:disabled{opacity:.45}
-.mkTowerStatus{text-align:center;font-weight:700;font-size:13px}
-.mkTowerMult{text-align:center;font-weight:900;margin:7px}
-.mkTowerGrid{display:flex;flex-direction:column-reverse;gap:6px}
-.mkTowerFloor{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:5px;background:#edf2f8;border-radius:9px}
-.mkTowerBlock{height:42px;border:0;border-radius:7px;background:#d7e0ec;font-size:18px;font-weight:bold;cursor:pointer}
-.mkTowerFloor.current{outline:2px solid #1769e0}
-.mkTowerBlock.safe{background:#29a86b;color:#fff}.mkTowerBlock.trap{background:#e34d59;color:#fff}
-.mkTowerHist{display:grid;grid-template-columns:1.2fr 1fr .8fr .9fr;gap:4px;padding:8px 2px;border-bottom:1px solid #edf0f5;font-size:11px;text-align:center}
-.mkTowerHeadRow{font-weight:bold;color:#64748b}
-.mkTowerOk{color:#159664;font-weight:bold}.mkTowerBad{color:#df4350;font-weight:bold}
-.mkTowerClose{float:right;background:#ffffff22;color:#fff;border:1px solid #ffffff55;border-radius:9px;padding:7px 10px;cursor:pointer}
-.mkTowerNote{text-align:center;color:#7b8798;font-size:10px;padding:6px}
-</style>
 </head>
 
 <body>
-<div id="mkTowerLauncher"><button type="button" id="mkTowerOpen">🏗️ MK TOWER</button></div>
-<div id="mkTowerModal">
- <div class="mkTowerBox">
-  <div class="mkTowerHead">
-   <button class="mkTowerClose" id="mkTowerClose">✕</button>
-   <h2>🏗️ MK TOWER</h2><div style="font-size:12px;margin-top:4px">Choose one column on every floor.</div>
-   <div class="mkTowerBalance"><span>Balance</span><b id="mkTowerBal">₹500.00</b></div>
-  </div>
-  <div class="mkTowerCard">
-   <div class="mkTowerTitle">Select Difficulty</div>
-   <div class="mkTowerModes">
-    <button class="mkTowerMode active" data-tmode="easy">🟢 EASY<small>5 Floors</small></button>
-    <button class="mkTowerMode" data-tmode="normal">🟡 NORMAL<small>7 Floors</small></button>
-    <button class="mkTowerMode" data-tmode="hard">🔴 HARD<small>10 Floors</small></button>
-   </div>
-   <div class="mkTowerTitle" style="margin-top:16px">Bet Amount</div>
-   <div class="mkTowerBet"><button class="mkTowerCircle" id="mkTowerMinus">−</button><div class="mkTowerAmount" id="mkTowerBet">₹5</div><button class="mkTowerCircle" id="mkTowerPlus">+</button></div>
-   <button class="mkTowerStart" id="mkTowerStart">START TOWER</button>
-  </div>
-  <div class="mkTowerCard">
-   <div class="mkTowerStatus" id="mkTowerStatus">Select difficulty and start the tower.</div>
-   <div class="mkTowerMult" id="mkTowerMult">Multiplier: —</div>
-   <div class="mkTowerGrid" id="mkTowerGrid"></div>
-   <button class="mkTowerCash" id="mkTowerCash" disabled>CASH OUT</button>
-  </div>
-  <div class="mkTowerCard">
-   <div class="mkTowerTitle">📜 Betting History</div>
-   <div class="mkTowerHist mkTowerHeadRow"><div>Period</div><div>Mode</div><div>Bet</div><div>Result</div></div>
-   <div id="mkTowerHistory"></div>
-  </div>
-  <div class="mkTowerNote">Demo interface — ₹ values are virtual/demo values only.</div>
- </div>
-</div>
-
 
 <div id="resultEffect" class="resultEffect"></div>
 
@@ -2358,7 +2290,7 @@ function getAuthUser(){
   return users.find(u=>String(u.gameId)===String(currentId)) || null;
 }
 function normalizeMobile(mobile){
-  return String(mobile||'').replace(/\\D/g,'');
+  return String(mobile||'').replace(/[^0-9]/g,'');
 }
 function findUserByMobile(mobile){
   const target=normalizeMobile(mobile);
@@ -3542,7 +3474,7 @@ window.MK_CLOUD_ENABLED=true;
     const mobile=document.getElementById('registerMobile').value.trim();
     const password=document.getElementById('registerPassword').value;
     const confirm=document.getElementById('registerConfirm').value;
-    if(!/^\\d{10}$/.test(mobile)||password.length<8||password!==confirm){registerMsg.textContent='Mobile/password details check pannunga.';registerMsg.style.color='#ff8f98';return;}
+    if(!/^[0-9]{10}$/.test(mobile)||password.length<8||password!==confirm){registerMsg.textContent='Mobile/password details check pannunga.';registerMsg.style.color='#ff8f98';return;}
     try{
       reg.disabled=true; registerMsg.textContent='Creating account...';
       const r=await register(mobile,password);
@@ -3814,46 +3746,6 @@ window.MK_CLOUD_ENABLED=true;
 })();
 </script>
 
-
-<script id="mkTowerScript">
-(function(){
-const C={easy:{f:5,s:4,m:[1.15,1.35,1.60,2,2.5]},normal:{f:7,s:3,m:[1.2,1.5,1.9,2.4,3.1,4,5]},hard:{f:10,s:2,m:[1.3,1.7,2.2,2.9,3.8,4.9,6.2,7.5,8.7,10]}};
-let mode="easy",bet=5,run=false,lvl=0,safe=[],period="",bal=500;
-const $=x=>document.getElementById(x),money=x=>"₹"+Number(x).toFixed(2);
-function balance(){ $("mkTowerBal").textContent=money(bal) }
-function preview(){
- let c=C[mode],t=$("mkTowerGrid");t.innerHTML="";
- for(let i=0;i<c.f;i++){let f=document.createElement("div");f.className="mkTowerFloor";
-  for(let j=0;j<5;j++){let b=document.createElement("button");b.className="mkTowerBlock";b.textContent="?";b.disabled=true;f.appendChild(b)}
-  t.appendChild(f)
- }
- $("mkTowerStatus").textContent=c.f+" floors • 5 columns";$("mkTowerMult").textContent="Multiplier: —";$("mkTowerCash").disabled=true;
-}
-document.querySelectorAll(".mkTowerMode").forEach(b=>b.onclick=()=>{if(run)return;document.querySelectorAll(".mkTowerMode").forEach(x=>x.classList.remove("active"));b.classList.add("active");mode=b.dataset.tmode;preview()});
-$("mkTowerMinus").onclick=()=>{if(!run){bet=Math.max(5,bet-5);$("mkTowerBet").textContent="₹"+bet}};
-$("mkTowerPlus").onclick=()=>{if(!run){bet+=5;$("mkTowerBet").textContent="₹"+bet}};
-function makeSafe(n){let a=[];while(a.length<n){let x=Math.floor(Math.random()*5);if(!a.includes(x))a.push(x)}return a}
-function current(){
- let fs=[...$("mkTowerGrid").children],f=fs[C[mode].f-1-lvl];f.classList.add("current");safe=makeSafe(C[mode].s);
- [...f.children].forEach((b,i)=>{b.disabled=false;b.onclick=()=>pick(i)})
-}
-function pick(i){
- if(!run)return;let fs=[...$("mkTowerGrid").children],f=fs[C[mode].f-1-lvl];
- [...f.children].forEach((b,j)=>{b.disabled=true;b.textContent=safe.includes(j)?"✓":"×";b.classList.add(safe.includes(j)?"safe":"trap")});
- if(!safe.includes(i)){run=false;$("mkTowerCash").disabled=true;$("mkTowerStart").disabled=false;$("mkTowerStatus").textContent="❌ Failed at Level "+(lvl+1);hist("FAILED",lvl+1);return}
- lvl++;let mult=C[mode].m[lvl-1];$("mkTowerMult").textContent="Multiplier: "+mult.toFixed(2)+"×";
- if(lvl>=C[mode].f)finish("COMPLETED");else{$("mkTowerStatus").textContent="✓ Safe! Level "+(lvl+1);setTimeout(current,350)}
-}
-function finish(type){let mult=C[mode].m[lvl-1],pay=bet*mult;bal+=pay;balance();run=false;$("mkTowerCash").disabled=true;$("mkTowerStart").disabled=false;$("mkTowerStatus").textContent="🏆 "+type+" — "+money(pay);hist(type,lvl)}
-$("mkTowerCash").onclick=()=>{if(run&&lvl>0)finish("CASH OUT")};
-$("mkTowerStart").onclick=()=>{if(run||bal<bet){if(bal<bet)$("mkTowerStatus").textContent="Insufficient demo balance.";return}bal-=bet;balance();run=true;lvl=0;period=Date.now().toString().slice(-8);$("mkTowerStart").disabled=true;$("mkTowerCash").disabled=false;preview();$("mkTowerStatus").textContent="Level 1: Choose one column";current()};
-function hist(result,level){let h=JSON.parse(localStorage.getItem("mkTowerHistory")||"[]");h.unshift({p:period,m:mode.toUpperCase(),b:bet,r:result,l:level});localStorage.setItem("mkTowerHistory",JSON.stringify(h.slice(0,50)));renderHist()}
-function renderHist(){let h=JSON.parse(localStorage.getItem("mkTowerHistory")||"[]");$("mkTowerHistory").innerHTML=h.length?h.map(x=>`<div class="mkTowerHist"><div>${x.p}</div><div>${x.m}</div><div>${money(x.b)}</div><div class="${x.r==="FAILED"?"mkTowerBad":"mkTowerOk"}">${x.r}</div></div>`).join(""):`<div style="text-align:center;padding:15px;color:#8995a5;font-size:12px">No betting history yet.</div>`}
-$("mkTowerOpen").onclick=()=>{$("mkTowerModal").classList.add("show")};
-$("mkTowerClose").onclick=()=>{$("mkTowerModal").classList.remove("show")};
-preview();renderHist();balance();
-})();
-</script>
 </body>
 </html>
 
