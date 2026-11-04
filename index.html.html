@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MK Number Finder</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d33;--line:#293653;--text:#f4f7ff;--muted:#aab6d0;--accent:#6d8cff;--accent2:#8b5cf6}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#0b1020,#111a31);font-family:system-ui,-apple-system,"Noto Sans Tamil",sans-serif;color:var(--text);min-height:100vh;padding:22px}
+.wrap{max-width:850px;margin:0 auto}.brand{text-align:center;margin:12px 0 24px}.brand h1{margin:0;font-size:clamp(25px,5vw,36px)}.brand p{color:var(--muted);margin:8px 0}
+.card{background:rgba(21,29,51,.96);border:1px solid var(--line);border-radius:18px;padding:20px;margin:14px 0;box-shadow:0 12px 35px #0003}
+label{display:block;font-weight:650;margin:0 0 9px}textarea,input{width:100%;border:1px solid var(--line);background:#0c1428;color:var(--text);border-radius:12px;padding:13px;font:inherit;outline:none}textarea:focus,input:focus{border-color:var(--accent)}textarea{min-height:190px;resize:vertical;line-height:1.6}input{font-size:19px;letter-spacing:2px}
+.row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;margin-top:16px}.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}button{border:0;border-radius:11px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:white}button.secondary{background:#273653}button:active{transform:scale(.98)}
+.hint,.muted{color:var(--muted);font-size:13px}.stats{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}.pill{background:#202d4b;border:1px solid var(--line);border-radius:99px;padding:7px 12px;color:#dbe5ff;font-size:13px}
+.result{background:#0d162b;border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}.result-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.digits{font:700 19px ui-monospace,monospace;letter-spacing:2px;word-break:break-word;color:#b9c9ff}.digit-chip{display:inline-flex;flex-direction:column;align-items:center;gap:3px;background:#182440;border:1px solid #314365;border-radius:9px;padding:7px 9px;margin:3px;min-width:48px}.digit-chip b{font-size:20px}.digit-chip small{font:600 10px system-ui;letter-spacing:0;color:#c4cde0}.green{color:#45dc91}.red{color:#ff707d}.violet{color:#c39aff}.empty{padding:18px;text-align:center;color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:16px}
+@media(max-width:600px){body{padding:12px}.card{padding:15px}.row{grid-template-columns:1fr}.row button{width:100%}.result-top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <h1>🔎 MK Number Finder</h1>
+    <p>Search your number sequence and see the next 7 digits with Big/Small and Red/Green labels.</p>
+  </header>
+  <section class="card">
+    <label for="sequence">1. Paste your number sequence here</label>
+    <textarea id="sequence" placeholder="Example: 566429295...&#10;Spaces, commas, and line breaks are okay."></textarea>
+    <p class="hint">Note: Only digits are used. Spaces, commas, and line breaks are ignored. Big = 5–9; Small = 0–4. Green = 1, 3, 7, 9; Red = 2, 4, 6, 8; 0 = Red/Violet; 5 = Green/Violet.</p>
+    <div class="row">
+      <div>
+        <label for="needle">2. Number to search</label>
+        <input id="needle" inputmode="numeric" placeholder="e.g. 295" autocomplete="off">
+      </div>
+      <button id="searchBtn">Search</button>
+    </div>
+    <div class="btns">
+      <button class="secondary" id="clearBtn">Clear</button>
+    </div>
+  </section>
+  <section class="card" id="output" aria-live="polite">
+    <strong>Results</strong>
+    <div class="empty">Paste a sequence, enter a number, and press Search.</div>
+  </section>
+  <footer>MK Number Finder · Your data is processed in this browser and is not sent to a server.</footer>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+let latestResults = [];
+function runSearch(){
+  const raw = $('sequence').value;
+  const query = $('needle').value.replace(/\D/g,'');
+  const digits = raw.replace(/\D/g,'');
+  const out = $('output');
+  latestResults = [];
+  if(!digits){out.innerHTML='<strong>Results</strong><div class="empty">Please paste your number sequence first.</div>';return;}
+  if(!query){out.innerHTML='<strong>Results</strong><div class="empty">Please enter a number to search.</div>';return;}
+  let from = 0, pos;
+  while((pos = digits.indexOf(query, from)) !== -1){
+    const next = digits.slice(pos + query.length, pos + query.length + 7);
+    latestResults.push({position:pos+1,next});
+    from = pos + 1; // overlapping matches are included
+  }
+  let markup = '<strong>Results</strong><div class="stats"><span class="pill">Matches: '+latestResults.length+'</span><span class="pill">Search: '+query+'</span><span class="pill">Sequence digits: '+digits.length.toLocaleString()+'</span></div>';
+  if(!latestResults.length){markup += '<div class="empty">This number was not found in the sequence.</div>';}
+  else{
+    latestResults.forEach((r,i)=>{
+      const shown = r.next ? r.next.split('').map(d=>{
+        const n = Number(d);
+        const size = n >= 5 ? 'Big' : 'Small';
+        let color = '';
+        if (n === 0) color = '<span class="red">Red</span>/<span class="violet">Violet</span>';
+        else if (n === 5) color = '<span class="green">Green</span>/<span class="violet">Violet</span>';
+        else if ([1,3,7,9].includes(n)) color = '<span class="green">Green</span>';
+        else color = '<span class="red">Red</span>';
+        return '<span class="digit-chip"><b>'+d+'</b><small>'+size+'</small><small>'+color+'</small></span>';
+      }).join('') : '<span class="muted">(No following digits)</span>';
+      markup += '<div class="result"><div class="result-top"><b>Result '+(i+1)+'</b><span class="muted">Position: '+r.position+'</span></div><div class="digits">'+shown+'</div></div>';
+    });
+    markup += '<div class="btns"><button id="copyBtn">Copy all results</button></div>';
+  }
+  out.innerHTML = markup;
+  const copy = document.getElementById('copyBtn');
+  if(copy) copy.addEventListener('click', async()=>{
+    const text = latestResults.map((r,i)=>(i+1)+'. '+(r.next ? r.next.split('').join(' ') : '(No following digits)')).join('\n');
+    try{await navigator.clipboard.writeText(text);copy.textContent='Copied!';}
+    catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();copy.textContent='Copied!';}
+  });
+}
+$('searchBtn').addEventListener('click',runSearch);
+$('needle').addEventListener('keydown',e=>{if(e.key==='Enter')runSearch();});
+$('clearBtn').addEventListener('click',()=>{$('sequence').value='';$('needle').value='';latestResults=[];$('output').innerHTML='<strong>Results</strong><div class="empty">Paste a sequence, enter a number, and press Search.</div>';});
+</script>
+</body>
+</html>
